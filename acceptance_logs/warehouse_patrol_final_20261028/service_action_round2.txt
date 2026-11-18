@@ -1,0 +1,31 @@
+('STOP_CALL', success: True
+message: !!python/str "\u5DF2\u505C\u6B62\u5DE1\u903B")
+('STATUS_AFTER_STOP', header: 
+  seq: 5
+  stamp: 
+    secs: 14
+    nsecs:   1000000
+  frame_id: ''
+state: "STOPPED"
+waypoint_index: 2
+total_waypoints: 10
+distance_to_waypoint: 1.41012692451
+message: !!python/str "\u5DF2\u505C\u6B62\u5DE1\u903B")
+('START_CALL', success: True
+message: !!python/str "\u6CBF A* \u5168\u5C40\u8DEF\u5F84\u5DE1\u903B")
+('STATUS_AFTER_START', header: 
+  seq: 8
+  stamp: 
+    secs: 15
+    nsecs: 203000000
+  frame_id: ''
+state: "RUNNING"
+waypoint_index: 2
+total_waypoints: 10
+distance_to_waypoint: 1.36426246166
+message: !!python/str "\u6CBF A* \u5168\u5C40\u8DEF\u5F84\u5DE1\u903B")
+('ACTION_SERVER', True)
+('ACTION_STATE_AFTER_SEND', 1)
+('ACTION_STATE_AFTER_CANCEL', 2)
+('ACTION_RESULT', success: False
+message: !!python/str "\u4EFB\u52A1\u5DF2\u53D6\u6D88")

@@ -1,0 +1,11 @@
+<launch>
+  <env name="TURTLEBOT3_MODEL" value="burger"/>
+
+  <include file="$(find warehouse_patrol_v2)/launch/simulation.launch"/>
+
+  <node pkg="warehouse_patrol_v2"
+        type="patrol_controller.py"
+        name="warehouse_patrol_controller"
+        output="screen"
+        respawn="true"/>
+</launch>

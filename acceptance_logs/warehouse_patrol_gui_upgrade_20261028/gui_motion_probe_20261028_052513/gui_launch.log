@@ -1,0 +1,102 @@
+xacro: in-order processing became default in ROS Melodic. You can drop the option.
+[0m[ INFO] [1793190323.748006284]: Finished loading Gazebo ROS API Plugin.[0m
+[0m[ INFO] [1793190323.760388673]: waitForService: Service [/gazebo_gui/set_physics_properties] has not been advertised, waiting...[0m
+Error setting socket option (IP_ADD_MEMBERSHIP).
+Error setting socket option (IP_ADD_MEMBERSHIP).
+[0m[ INFO] [1793190323.600610513]: Finished loading Gazebo ROS API Plugin.[0m
+[0m[ INFO] [1793190323.609841611]: waitForService: Service [/gazebo/set_physics_properties] has not been advertised, waiting...[0m
+Error setting socket option (IP_ADD_MEMBERSHIP).
+Error setting socket option (IP_ADD_MEMBERSHIP).
+[WARN] [1793190325.821806, 0.000000]: Waiting for Gazebo services to become available...
+[WARN] [1793190326.278508, 0.000000]: waiting for turtlebot3_burger to be spawned into Gazebo world
+[1;31m[Err] [0m[1;31m[[0m[1;31mREST.cc[0m[1;31m:[0m[1;31m205[0m[1;31m] [0m[1;31mError in REST request[0m[1;31m[0m
+
+libcurl: (51) SSL: no alternative certificate subject name matches target host name 'api.ignitionfuel.org'
+[WARN] [1793190327.007251, 0.001000]: robot model exists, waiting for fresh /odom data
+[INFO] [1793190326.991436, 0.001000]: Spawn guard created model turtlebot3_burger successfully.
+[INFO] [1793190328.177527, 0.543000]: Generated patrol path with 345 cells and 10 checkpoints
+[INFO] [1793190328.181883, 0.544000]: Checkpoint 1: (-7.00, 0.00)
+[INFO] [1793190328.185680, 0.544000]: Checkpoint 2: (-7.00, -3.00)
+[INFO] [1793190328.192364, 0.549000]: Checkpoint 3: (-7.00, -6.00)
+[INFO] [1793190328.196784, 0.557000]: Checkpoint 4: (0.00, -6.25)
+[INFO] [1793190328.200652, 0.557000]: Checkpoint 5: (7.00, -6.00)
+[INFO] [1793190328.204859, 0.557000]: Checkpoint 6: (7.00, 0.00)
+[INFO] [1793190328.209227, 0.558000]: Checkpoint 7: (7.00, 6.00)
+[INFO] [1793190328.213476, 0.558000]: Checkpoint 8: (0.00, 6.25)
+[INFO] [1793190328.216742, 0.560000]: Checkpoint 9: (-7.00, 6.00)
+[INFO] [1793190328.219792, 0.560000]: Checkpoint 10: (-7.00, 3.25)
+[0m[ INFO] [1793190322.907126398]: rviz version 1.13.30[0m
+[0m[ INFO] [1793190322.907224233]: compiled against Qt version 5.9.5[0m
+[0m[ INFO] [1793190322.907238390]: compiled against OGRE version 1.9.0 (Ghadamon)[0m
+[0m[ INFO] [1793190322.939725276]: Forcing OpenGl version 0.[0m
+[0m[ INFO] [1793190323.402052587]: Stereo is NOT SUPPORTED[0m
+[0m[ INFO] [1793190323.402194577]: OpenGL device: llvmpipe (LLVM 10.0.0, 128 bits)[0m
+[0m[ INFO] [1793190323.402225094]: OpenGl version: 3.1 (GLSL 1.4).[0m
+[0m[ INFO] [1793190328.309831353, 0.601000000]: Creating 1 swatches[0m
+[INFO] [1793190323.813195, 0.000000]: 统一巡逻控制器已就绪，等待全局路径。
+... logging to /home/la/.ros/log/a3e5a14e-d2ca-11f1-a1da-000c291a0e76/roslaunch-ubuntu-93303.log
+Checking log directory for disk usage. This may take a while.
+Press Ctrl-C to interrupt
+Done checking log file disk usage. Usage is <1GB.
+]2;/home/la/catkin_ws/src/warehouse_patrol_v2/launch/patrol.launch
+[1mstarted roslaunch server http://ubuntu:40575/[0m
+
+SUMMARY
+========
+
+PARAMETERS
+ * /gazebo/enable_ros_network: True
+ * /robot_description: <?xml version="1....
+ * /robot_state_publisher/publish_frequency: 30.0
+ * /rosdistro: melodic
+ * /rosversion: 1.14.13
+ * /spawn_burger/model_name: turtlebot3_burger
+ * /spawn_burger/reference_frame: world
+ * /spawn_burger/robot_description_param: robot_description
+ * /spawn_burger/x: -7.0
+ * /spawn_burger/y: 0.0
+ * /spawn_burger/z: 0.05
+ * /use_sim_time: True
+ * /warehouse_navigation_core/retry_interval: 3.0
+ * /warehouse_navigation_core/service_timeout: 30.0
+ * /warehouse_navigation_core/startup_timeout: 45.0
+ * /warehouse_patrol_manager/autostart: True
+ * /warehouse_patrol_manager/loop_patrol: True
+
+NODES
+  /
+    gazebo (gazebo_ros/gzserver)
+    gazebo_gui (gazebo_ros/gzclient)
+    robot_state_publisher (robot_state_publisher/robot_state_publisher)
+    spawn_burger (warehouse_patrol_bot/spawn_turtlebot3_if_needed.py)
+    warehouse_navigation_core (warehouse_patrol_bot/warehouse_navigation_core.py)
+    warehouse_patrol_manager (warehouse_patrol_bot/warehouse_unified_navigation.py)
+    warehouse_patrol_rviz (rviz/rviz)
+
+auto-starting new master
+[1mprocess[master]: started with pid [93401][0m
+[1mROS_MASTER_URI=http://localhost:11311[0m
+]2;/home/la/catkin_ws/src/warehouse_patrol_v2/launch/patrol.launch http://localhost:11311
+[1msetting /run_id to a3e5a14e-d2ca-11f1-a1da-000c291a0e76[0m
+[1mprocess[rosout-1]: started with pid [93427][0m
+started core service [/rosout]
+[1mprocess[gazebo-2]: started with pid [93430][0m
+[1mprocess[gazebo_gui-3]: started with pid [93434][0m
+[1mprocess[robot_state_publisher-4]: started with pid [93440][0m
+[1mprocess[spawn_burger-5]: started with pid [93445][0m
+[1mprocess[warehouse_navigation_core-6]: started with pid [93446][0m
+[1mprocess[warehouse_patrol_manager-7]: started with pid [93448][0m
+[1mprocess[warehouse_patrol_rviz-8]: started with pid [93453][0m
+[1m[spawn_burger-5] process has finished cleanly
+log file: /home/la/.ros/log/a3e5a14e-d2ca-11f1-a1da-000c291a0e76/spawn_burger-5*.log[0m
+[warehouse_patrol_rviz-8] killing on exit
+[warehouse_patrol_manager-7] killing on exit
+[warehouse_navigation_core-6] killing on exit
+[robot_state_publisher-4] killing on exit
+[gazebo_gui-3] killing on exit
+[gazebo-2] killing on exit
+[rosout-1] killing on exit
+[master] killing on exit
+shutting down processing monitor...
+... shutting down processing monitor complete
+[1mdone[0m

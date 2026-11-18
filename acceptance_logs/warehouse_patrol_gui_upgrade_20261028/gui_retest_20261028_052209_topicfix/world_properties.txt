@@ -1,0 +1,18 @@
+sim_time: 0.48
+model_names: [ground_plane, warehouse_floor_visual, north_wall, south_wall, west_wall, east_wall,
+  rack_0_0, shelf_0_0_0, shelf_0_0_1, shelf_0_0_2, rack_0_1, shelf_0_1_0, shelf_0_1_1,
+  shelf_0_1_2, rack_0_2, shelf_0_2_0, shelf_0_2_1, shelf_0_2_2, rack_0_3, shelf_0_3_0,
+  shelf_0_3_1, shelf_0_3_2, rack_1_0, shelf_1_0_0, shelf_1_0_1, shelf_1_0_2, rack_1_1,
+  shelf_1_1_0, shelf_1_1_1, shelf_1_1_2, rack_1_2, shelf_1_2_0, shelf_1_2_1, shelf_1_2_2,
+  rack_1_3, shelf_1_3_0, shelf_1_3_1, shelf_1_3_2, rack_2_0, shelf_2_0_0, shelf_2_0_1,
+  shelf_2_0_2, rack_2_3, shelf_2_3_0, shelf_2_3_1, shelf_2_3_2, rack_3_0, shelf_3_0_0,
+  shelf_3_0_1, shelf_3_0_2, rack_3_1, shelf_3_1_0, shelf_3_1_1, shelf_3_1_2, rack_3_2,
+  shelf_3_2_0, shelf_3_2_1, shelf_3_2_2, rack_3_3, shelf_3_3_0, shelf_3_3_1, shelf_3_3_2,
+  rack_4_0, shelf_4_0_0, shelf_4_0_1, shelf_4_0_2, rack_4_1, shelf_4_1_0, shelf_4_1_1,
+  shelf_4_1_2, rack_4_2, shelf_4_2_0, shelf_4_2_1, shelf_4_2_2, rack_4_3, shelf_4_3_0,
+  shelf_4_3_1, shelf_4_3_2, left_partition_0, right_partition_0, left_partition_1,
+  right_partition_1, left_partition_2, right_partition_2, left_partition_3, right_partition_3,
+  obstacle_0, obstacle_1, obstacle_2, obstacle_3, obstacle_4, obstacle_5, turtlebot3_burger]
+rendering_enabled: True
+success: True
+status_message: "GetWorldProperties: got properties"

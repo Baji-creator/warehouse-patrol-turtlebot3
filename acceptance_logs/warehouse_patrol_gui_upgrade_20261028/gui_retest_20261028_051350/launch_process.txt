@@ -1,0 +1,1 @@
+ 85304 Sl   /usr/bin/python /opt/ros/melodic/bin/roslaunch warehouse_patrol_v2 patrol.launch gui:=true headless:=false use_rviz:=true autostart:=true loop_patrol:=true

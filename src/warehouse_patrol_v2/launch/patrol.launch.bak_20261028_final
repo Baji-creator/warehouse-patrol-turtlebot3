@@ -1,0 +1,33 @@
+<launch>
+  <env name="TURTLEBOT3_MODEL" value="burger"/>
+
+  <arg name="x" default="-7.0"/>
+  <arg name="y" default="0.0"/>
+  <arg name="gui" default="true"/>
+  <arg name="headless" default="false"/>
+  <arg name="use_rviz" default="true"/>
+  <arg name="autostart" default="true"/>
+  <arg name="loop_patrol" default="true"/>
+
+  <include file="$(find warehouse_patrol_v2)/launch/simulation.launch">
+    <arg name="x" value="$(arg x)"/>
+    <arg name="y" value="$(arg y)"/>
+    <arg name="gui" value="$(arg gui)"/>
+    <arg name="headless" value="$(arg headless)"/>
+    <arg name="use_rviz" value="false"/>
+  </include>
+
+  <node pkg="warehouse_patrol_bot" type="warehouse_navigation_core.py"
+        name="warehouse_navigation_core" output="screen"/>
+
+  <node pkg="warehouse_patrol_bot" type="warehouse_unified_navigation.py"
+        name="warehouse_patrol_manager" output="screen">
+    <param name="autostart" value="$(arg autostart)"/>
+    <param name="loop_patrol" value="$(arg loop_patrol)"/>
+  </node>
+
+  <node if="$(arg use_rviz)" pkg="rviz" type="rviz"
+        name="warehouse_patrol_rviz"
+        args="-d $(find warehouse_patrol_bot)/rviz/warehouse_patrol.rviz"
+        output="screen"/>
+</launch>

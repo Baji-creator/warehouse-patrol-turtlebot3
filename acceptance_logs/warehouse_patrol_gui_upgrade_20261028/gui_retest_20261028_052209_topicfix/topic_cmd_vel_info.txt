@@ -1,0 +1,9 @@
+Type: geometry_msgs/Twist
+
+Publishers: 
+ * /warehouse_patrol_manager (http://ubuntu:42269/)
+
+Subscribers: 
+ * /gazebo (http://ubuntu:46169/)
+
+

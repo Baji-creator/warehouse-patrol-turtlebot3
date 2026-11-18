@@ -1,0 +1,27 @@
+header: 
+  seq: 3
+  stamp: 
+    secs: 3
+    nsecs: 173000000
+  frame_id: "world"
+pose: 
+  position: 
+    x: -6.99266341294
+    y: -0.00548643310329
+    z: -0.00100265395739
+  orientation: 
+    x: 0.00203733849079
+    y: 0.00328161461705
+    z: -0.529070907941
+    w: 0.848568827278
+twist: 
+  linear: 
+    x: 0.00191532569089
+    y: -0.00358761740205
+    z: 3.67269070129e-05
+  angular: 
+    x: -0.000165503120483
+    y: -0.000133496405467
+    z: -0.445894571013
+success: True
+status_message: "GetModelState: got properties"

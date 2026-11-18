@@ -1,0 +1,32 @@
+('MODEL_COUNT', 93)
+('MODEL_PRESENT', 'warehouse_floor_visual', True)
+('MODEL_PRESENT', 'rack_2_0', True)
+('MODEL_PRESENT', 'left_partition_2', True)
+('MODEL_PRESENT', 'obstacle_3', True)
+('MODEL_PRESENT', 'turtlebot3_burger', True)
+('ROBOT_MODEL', True, -7.008, -1.461)
+NODES
+/gazebo
+/robot_state_publisher
+/rosout
+/visual_upgrade_inventory_48224_1793186197461
+/warehouse_navigation_core
+/warehouse_patrol_manager
+TOPICS
+('/cmd_vel', 'geometry_msgs/Twist')
+('/odom', 'nav_msgs/Odometry')
+('/scan', 'sensor_msgs/LaserScan')
+('/tf', 'tf2_msgs/TFMessage')
+('/warehouse_patrol/global_path', 'nav_msgs/Path')
+('/warehouse_patrol/grid_map', 'nav_msgs/OccupancyGrid')
+('/warehouse_patrol/state', 'std_msgs/String')
+('/warehouse_patrol/status', 'warehouse_patrol_bot/PatrolStatus')
+SERVICES
+/warehouse_patrol/control
+('ACTION_SERVER', True)
+('SCAN', 'base_scan', 0.11999999731779099, 6.0, 540, 0.0, -3.142, 3.142)
+('GRID', 73, 73, 0.25)
+('PATH_POSES', 345)
+('ODOM', -7.008, -1.53)
+('STATUS', 'RUNNING', 2, 10, 1.475)
+('STATE_TOPIC', 'RUNNING')

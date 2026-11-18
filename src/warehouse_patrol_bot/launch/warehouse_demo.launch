@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='utf-8'?>
+<launch>
+  <arg default="true" name="start_rviz" />
+
+  
+  <env name="TURTLEBOT3_MODEL" value="burger" />
+  <include file="$(find turtlebot3_gazebo)/launch/turtlebot3_empty_world.launch" />
+  
+  <node name="warehouse_maze_builder" output="screen" pkg="warehouse_patrol_bot" type="build_maze_gazebo.py" />
+  
+  <node name="maze_patrol_controller" output="screen" pkg="warehouse_patrol_bot" type="maze_patrol.py" />
+  
+  <node args="-d $(find warehouse_patrol_bot)/rviz/warehouse_patrol.rviz" if="$(arg start_rviz)" name="warehouse_rviz" output="screen" pkg="rviz" type="rviz" />
+</launch>

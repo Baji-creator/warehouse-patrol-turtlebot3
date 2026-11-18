@@ -1,0 +1,10 @@
+Type: nav_msgs/Path
+
+Publishers: 
+ * /warehouse_navigation_core (http://ubuntu:37673/)
+
+Subscribers: 
+ * /warehouse_patrol_manager (http://ubuntu:42131/)
+ * /warehouse_patrol_rviz (http://ubuntu:39245/)
+
+

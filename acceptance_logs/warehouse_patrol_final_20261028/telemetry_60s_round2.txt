@@ -1,0 +1,58 @@
+START_MODEL success=True x=-7.014 y=-1.590 z=-0.001
+SCAN_INFO frame=base_scan range_min=0.120 range_max=3.500 count=360
+T=00 STATUS state=STOPPED waypoint=2/10 dist=1.418 msg=已停止巡逻
+T=00 ODOM x=-7.014 y=-1.590
+T=00 CMD linear=0.000 angular=0.000
+T=00 MODEL x=-7.014 y=-1.590
+T=05 STATUS state=RUNNING waypoint=2/10 dist=1.048 msg=沿 A* 全局路径巡逻
+T=05 ODOM x=-7.010 y=-2.000
+T=05 CMD linear=0.145 angular=-0.009
+T=05 MODEL x=-7.010 y=-2.001
+T=10 STATUS state=RUNNING waypoint=2/10 dist=0.536 msg=沿 A* 全局路径巡逻
+T=10 ODOM x=-6.993 y=-2.516
+T=10 CMD linear=0.132 angular=-0.036
+T=10 MODEL x=-6.993 y=-2.518
+T=15 STATUS state=RUNNING waypoint=3/10 dist=2.862 msg=沿 A* 全局路径巡逻
+T=15 ODOM x=-7.001 y=-3.158
+T=15 CMD linear=0.199 angular=0.018
+T=15 MODEL x=-7.001 y=-3.162
+T=20 STATUS state=RUNNING waypoint=3/10 dist=2.248 msg=沿 A* 全局路径巡逻
+T=20 ODOM x=-7.003 y=-3.793
+T=20 CMD linear=0.200 angular=-0.004
+T=20 MODEL x=-7.003 y=-3.797
+T=25 STATUS state=RUNNING waypoint=3/10 dist=1.729 msg=沿 A* 全局路径巡逻
+T=25 ODOM x=-6.999 y=-4.339
+T=25 CMD linear=0.200 angular=0.002
+T=25 MODEL x=-6.999 y=-4.340
+T=30 STATUS state=RUNNING waypoint=3/10 dist=1.020 msg=沿 A* 全局路径巡逻
+T=30 ODOM x=-7.004 y=-4.995
+T=30 CMD linear=0.148 angular=0.019
+T=30 MODEL x=-7.004 y=-4.999
+T=35 STATUS state=RUNNING waypoint=4/10 dist=7.039 msg=沿 A* 全局路径巡逻
+T=35 ODOM x=-7.003 y=-5.622
+T=35 CMD linear=0.200 angular=-0.007
+T=35 MODEL x=-7.003 y=-5.625
+T=40 STATUS state=RUNNING waypoint=4/10 dist=7.001 msg=沿 A* 全局路径巡逻
+T=40 ODOM x=-6.999 y=-6.068
+T=40 CMD linear=0.000 angular=0.450
+T=40 MODEL x=-6.999 y=-6.068
+T=45 STATUS state=RUNNING waypoint=4/10 dist=6.945 msg=沿 A* 全局路径巡逻
+T=45 ODOM x=-6.945 y=-6.154
+T=45 CMD linear=0.000 angular=0.450
+T=45 MODEL x=-6.946 y=-6.154
+T=50 STATUS state=RUNNING waypoint=4/10 dist=6.731 msg=沿 A* 全局路径巡逻
+T=50 ODOM x=-6.730 y=-6.264
+T=50 CMD linear=0.127 angular=0.232
+T=50 MODEL x=-6.724 y=-6.265
+T=55 STATUS state=RUNNING waypoint=4/10 dist=6.171 msg=沿 A* 全局路径巡逻
+T=55 ODOM x=-6.059 y=-6.255
+T=55 CMD linear=0.177 angular=-0.062
+T=55 MODEL x=-6.058 y=-6.255
+T=60 STATUS state=RUNNING waypoint=4/10 dist=5.544 msg=沿 A* 全局路径巡逻
+T=60 ODOM x=-5.491 y=-6.238
+T=60 CMD linear=0.138 angular=-0.039
+T=60 MODEL x=-5.488 y=-6.238
+END_MODEL success=True x=-5.487 y=-6.238 z=-0.001
+SCAN_COUNT 216
+CMD_COUNT 434
+WAYPOINTS_SEEN [2, 3, 4]

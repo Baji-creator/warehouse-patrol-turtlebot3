@@ -1,0 +1,3 @@
+RUNDIR=/home/la/catkin_ws/acceptance_logs/warehouse_patrol_gui_upgrade_20261028/gui_retest_20261028_052209_topicfix
+Wed Oct 28 05:22:09 PDT 2026
+READY=1

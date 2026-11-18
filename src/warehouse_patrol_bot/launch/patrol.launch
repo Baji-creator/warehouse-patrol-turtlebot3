@@ -1,0 +1,7 @@
+<launch>
+  <node pkg="warehouse_patrol_bot"
+        type="patrol.py"
+        name="warehouse_patrol"
+        output="screen"
+        respawn="false" />
+</launch>

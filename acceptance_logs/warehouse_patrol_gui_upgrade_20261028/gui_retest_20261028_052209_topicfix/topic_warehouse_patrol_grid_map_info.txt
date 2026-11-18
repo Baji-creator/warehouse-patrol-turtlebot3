@@ -1,0 +1,10 @@
+Type: nav_msgs/OccupancyGrid
+
+Publishers: 
+ * /warehouse_navigation_core (http://ubuntu:46689/)
+
+Subscribers: 
+ * /warehouse_patrol_manager (http://ubuntu:42269/)
+ * /warehouse_patrol_rviz (http://ubuntu:41557/)
+
+

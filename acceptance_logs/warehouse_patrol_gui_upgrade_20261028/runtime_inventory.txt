@@ -1,0 +1,34 @@
+Unable to register with master node [http://localhost:11311]: master may not be running yet. Will keep trying.
+('MODEL_COUNT', 92)
+('TURTLEBOT_COUNT', 0)
+('MODEL_PRESENT', 'warehouse_floor_visual', True)
+('MODEL_PRESENT', 'turtlebot3_burger', False)
+('ROBOT_MODEL', False, 0.0, 0.0)
+NODES
+/gazebo
+/gazebo_gui
+/robot_state_publisher
+/spawn_burger
+/warehouse_navigation_core
+/warehouse_patrol_manager
+/warehouse_patrol_rviz
+TOPICS
+('/cmd_vel', 'geometry_msgs/Twist')
+('/tf', 'tf2_msgs/TFMessage')
+('/warehouse_patrol/global_path', 'nav_msgs/Path')
+('/warehouse_patrol/grid_map', 'nav_msgs/OccupancyGrid')
+('/warehouse_patrol/state', 'std_msgs/String')
+('/warehouse_patrol/status', 'warehouse_patrol_bot/PatrolStatus')
+SERVICES
+/gazebo/get_joint_properties
+/gazebo/get_light_properties
+/gazebo/get_link_properties
+/gazebo/get_link_state
+/gazebo/get_loggers
+/gazebo/get_model_properties
+/gazebo/get_model_state
+/gazebo/get_physics_properties
+/gazebo/get_world_properties
+/warehouse_patrol/control
+('ACTION_SERVER', True)
+('SCAN', 'base_scan', 0.11999999731779099, 6.0, 540, -3.142, 3.142)

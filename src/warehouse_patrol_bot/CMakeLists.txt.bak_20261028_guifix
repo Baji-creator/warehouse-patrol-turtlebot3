@@ -1,0 +1,46 @@
+cmake_minimum_required(VERSION 3.0.2)
+project(warehouse_patrol_bot)
+
+find_package(catkin REQUIRED COMPONENTS
+  actionlib
+  actionlib_msgs
+  gazebo_ros
+  geometry_msgs
+  message_generation
+  nav_msgs
+  robot_state_publisher
+  roscpp
+  rospy
+  sensor_msgs
+  std_msgs
+  tf
+  urdf
+  xacro)
+
+add_message_files(FILES PatrolStatus.msg)
+add_service_files(FILES PatrolControl.srv)
+add_action_files(FILES Patrol.action)
+
+generate_messages(DEPENDENCIES actionlib_msgs std_msgs)
+
+catkin_package(
+  CATKIN_DEPENDS actionlib actionlib_msgs gazebo_ros geometry_msgs message_runtime
+                 nav_msgs robot_state_publisher roscpp rospy sensor_msgs std_msgs
+                 tf urdf xacro)
+
+include_directories(${catkin_INCLUDE_DIRS})
+
+catkin_install_python(PROGRAMS
+  scripts/patrol_manager.py
+  scripts/maze_patrol.py
+  scripts/patrol.py
+  scripts/obstacle_avoidance.py
+  scripts/build_maze_gazebo.py
+  scripts/maze_core.py
+  scripts/warehouse_navigation_core.py
+  scripts/warehouse_unified_navigation.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+install(DIRECTORY launch urdf worlds rviz docs
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+  OPTIONAL)

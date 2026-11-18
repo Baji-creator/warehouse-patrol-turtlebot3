@@ -1,0 +1,12 @@
+xacro: in-order processing became default in ROS Melodic. You can drop the option.
+the rosdep view is empty: call 'sudo rosdep init' and 'rosdep update'
+[0m[ INFO] [1793182303.735260104]: Finished loading Gazebo ROS API Plugin.[0m
+[0m[ INFO] [1793182303.742660772]: waitForService: Service [/gazebo/set_physics_properties] has not been advertised, waiting...[0m
+Error setting socket option (IP_ADD_MEMBERSHIP).
+Error setting socket option (IP_ADD_MEMBERSHIP).
+[WARN] [1793182305.745397, 0.000000]: Waiting for Gazebo services to become available...
+[INFO] [1793182304.179978, 0.000000]: Loading model XML from ros parameter robot_description
+[INFO] [1793182304.196928, 0.000000]: Waiting for service /gazebo/spawn_urdf_model
+[INFO] [1793182306.022643, 0.040000]: Calling service /gazebo/spawn_urdf_model
+[INFO] [1793182306.711115, 0.142000]: Spawn status: SpawnModel: Successfully spawned entity
+[WARN] [1793182306.724203, 0.142000]: robot model exists, waiting for fresh /odom data

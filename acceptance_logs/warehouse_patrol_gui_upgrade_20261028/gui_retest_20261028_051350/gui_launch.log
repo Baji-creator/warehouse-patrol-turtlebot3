@@ -1,0 +1,116 @@
+xacro: in-order processing became default in ROS Melodic. You can drop the option.
+[0m[ INFO] [1793189645.548502127]: Finished loading Gazebo ROS API Plugin.[0m
+[0m[ INFO] [1793189645.564015461]: waitForService: Service [/gazebo_gui/set_physics_properties] has not been advertised, waiting...[0m
+Error setting socket option (IP_ADD_MEMBERSHIP).
+Error setting socket option (IP_ADD_MEMBERSHIP).
+[WARN] [1793189647.006982, 0.000000]: Waiting for Gazebo services to become available...
+[0m[ INFO] [1793189645.521601854]: Finished loading Gazebo ROS API Plugin.[0m
+[0m[ INFO] [1793189645.533112255]: waitForService: Service [/gazebo/set_physics_properties] has not been advertised, waiting...[0m
+Error setting socket option (IP_ADD_MEMBERSHIP).
+Error setting socket option (IP_ADD_MEMBERSHIP).
+[1;31m[Err] [0m[1;31m[[0m[1;31mREST.cc[0m[1;31m:[0m[1;31m205[0m[1;31m] [0m[1;31mError in REST request[0m[1;31m[0m
+
+libcurl: (51) SSL: no alternative certificate subject name matches target host name 'api.ignitionfuel.org'
+[WARN] [1793189652.365448, 0.000000]: waiting for turtlebot3_burger to be spawned into Gazebo world
+[31m[ERROR] [1793189652.388493580]: GetModelState: model [turtlebot3_burger] does not exist[0m
+[WARN] [1793189654.623415, 0.078000]: robot model exists, waiting for fresh /odom data
+[INFO] [1793189654.610863, 0.078000]: Spawn guard created model turtlebot3_burger successfully.
+[WARN] [1793189665.749033, 5.351000]: robot model exists, waiting for fresh /odom data
+[WARN] [1793189675.838532, 10.434000]: robot model exists, waiting for fresh /odom data
+[WARN] [1793189684.787711, 15.503000]: robot model exists, waiting for fresh /odom data
+[WARN] [1793189695.320583, 20.674000]: robot model exists, waiting for fresh /odom data
+[ERROR] [1793189697.403902, 22.076000]: Planner startup timed out after 45.1s: robot model exists, waiting for fresh /odom data
+[ERROR] [1793189697.411743, 22.078000]: Global planner is not ready yet: robot model exists, waiting for fresh /odom data. Retrying in 3.0s
+[WARN] [1793189703.778683, 25.849000]: robot model exists, waiting for fresh /odom data
+[WARN] [1793189713.241192, 30.913000]: robot model exists, waiting for fresh /odom data
+[WARN] [1793189722.735669, 36.027000]: robot model exists, waiting for fresh /odom data
+[WARN] [1793189731.176388, 41.279000]: robot model exists, waiting for fresh /odom data
+[WARN] [1793189741.215165, 46.566000]: robot model exists, waiting for fresh /odom data
+[ERROR] [1793189747.466366, 50.480000]: Planner startup timed out after 45.3s: robot model exists, waiting for fresh /odom data
+[ERROR] [1793189747.473265, 50.483000]: Global planner is not ready yet: robot model exists, waiting for fresh /odom data. Retrying in 3.0s
+[WARN] [1793189754.758930, 53.497000]: robot model exists, waiting for fresh /odom data
+[WARN] [1793189763.269967, 58.749000]: robot model exists, waiting for fresh /odom data
+[WARN] [1793189774.362354, 64.083000]: robot model exists, waiting for fresh /odom data
+[WARN] [1793189784.368192, 69.274000]: robot model exists, waiting for fresh /odom data
+[WARN] [1793189791.718629, 74.338000]: robot model exists, waiting for fresh /odom data
+[ERROR] [1793189800.118269, 78.775000]: Planner startup timed out after 45.4s: robot model exists, waiting for fresh /odom data
+[ERROR] [1793189800.122486, 78.777000]: Global planner is not ready yet: robot model exists, waiting for fresh /odom data. Retrying in 3.0s
+[WARN] [1793189805.558742, 81.796000]: robot model exists, waiting for fresh /odom data
+[WARN] [1793189815.073246, 86.813000]: robot model exists, waiting for fresh /odom data
+[ERROR] [1793189816.354609, 87.552000]: Global planner is not ready yet: shutdown. Retrying in 3.0s
+[0m[ INFO] [1793189643.755783097]: rviz version 1.13.30[0m
+[0m[ INFO] [1793189643.756131578]: compiled against Qt version 5.9.5[0m
+[0m[ INFO] [1793189643.756207632]: compiled against OGRE version 1.9.0 (Ghadamon)[0m
+[0m[ INFO] [1793189644.088858062]: Forcing OpenGl version 0.[0m
+[0m[ INFO] [1793189645.569385291]: Stereo is NOT SUPPORTED[0m
+[0m[ INFO] [1793189645.569781893]: OpenGL device: llvmpipe (LLVM 10.0.0, 128 bits)[0m
+[0m[ INFO] [1793189645.570001509]: OpenGl version: 3.1 (GLSL 1.4).[0m
+[INFO] [1793189645.260505, 0.000000]: 统一巡逻控制器已就绪，等待全局路径。
+[31m[gazebo_gui-3] escalating to SIGTERM[0m
+[31m[gazebo-2] escalating to SIGTERM[0m
+... logging to /home/la/.ros/log/0e65c8ac-d2c9-11f1-a1da-000c291a0e76/roslaunch-ubuntu-85304.log
+Checking log directory for disk usage. This may take a while.
+Press Ctrl-C to interrupt
+Done checking log file disk usage. Usage is <1GB.
+]2;/home/la/catkin_ws/src/warehouse_patrol_v2/launch/patrol.launch
+[1mstarted roslaunch server http://ubuntu:38573/[0m
+
+SUMMARY
+========
+
+PARAMETERS
+ * /gazebo/enable_ros_network: True
+ * /robot_description: <?xml version="1....
+ * /robot_state_publisher/publish_frequency: 30.0
+ * /rosdistro: melodic
+ * /rosversion: 1.14.13
+ * /spawn_burger/model_name: turtlebot3_burger
+ * /spawn_burger/reference_frame: world
+ * /spawn_burger/robot_description_param: robot_description
+ * /spawn_burger/x: -7.0
+ * /spawn_burger/y: 0.0
+ * /spawn_burger/z: 0.05
+ * /use_sim_time: True
+ * /warehouse_navigation_core/retry_interval: 3.0
+ * /warehouse_navigation_core/service_timeout: 30.0
+ * /warehouse_navigation_core/startup_timeout: 45.0
+ * /warehouse_patrol_manager/autostart: True
+ * /warehouse_patrol_manager/loop_patrol: True
+
+NODES
+  /
+    gazebo (gazebo_ros/gzserver)
+    gazebo_gui (gazebo_ros/gzclient)
+    robot_state_publisher (robot_state_publisher/robot_state_publisher)
+    spawn_burger (warehouse_patrol_bot/spawn_turtlebot3_if_needed.py)
+    warehouse_navigation_core (warehouse_patrol_bot/warehouse_navigation_core.py)
+    warehouse_patrol_manager (warehouse_patrol_bot/warehouse_unified_navigation.py)
+    warehouse_patrol_rviz (rviz/rviz)
+
+auto-starting new master
+[1mprocess[master]: started with pid [85403][0m
+[1mROS_MASTER_URI=http://localhost:11311[0m
+]2;/home/la/catkin_ws/src/warehouse_patrol_v2/launch/patrol.launch http://localhost:11311
+[1msetting /run_id to 0e65c8ac-d2c9-11f1-a1da-000c291a0e76[0m
+[1mprocess[rosout-1]: started with pid [85420][0m
+started core service [/rosout]
+[1mprocess[gazebo-2]: started with pid [85423][0m
+[1mprocess[gazebo_gui-3]: started with pid [85427][0m
+[1mprocess[robot_state_publisher-4]: started with pid [85433][0m
+[1mprocess[spawn_burger-5]: started with pid [85439][0m
+[1mprocess[warehouse_navigation_core-6]: started with pid [85440][0m
+[1mprocess[warehouse_patrol_manager-7]: started with pid [85441][0m
+[1mprocess[warehouse_patrol_rviz-8]: started with pid [85446][0m
+[1m[spawn_burger-5] process has finished cleanly
+log file: /home/la/.ros/log/0e65c8ac-d2c9-11f1-a1da-000c291a0e76/spawn_burger-5*.log[0m
+[warehouse_patrol_rviz-8] killing on exit
+[robot_state_publisher-4] killing on exit
+[gazebo_gui-3] killing on exit
+[gazebo-2] killing on exit
+[warehouse_navigation_core-6] killing on exit
+[warehouse_patrol_manager-7] killing on exit
+[rosout-1] killing on exit
+[master] killing on exit
+shutting down processing monitor...
+... shutting down processing monitor complete
+[1mdone[0m

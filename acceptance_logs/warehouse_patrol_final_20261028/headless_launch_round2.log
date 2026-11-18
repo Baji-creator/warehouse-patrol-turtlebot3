@@ -1,0 +1,91 @@
+xacro: in-order processing became default in ROS Melodic. You can drop the option.
+the rosdep view is empty: call 'sudo rosdep init' and 'rosdep update'
+[0m[ INFO] [1793182477.163954206]: Finished loading Gazebo ROS API Plugin.[0m
+[0m[ INFO] [1793182477.181812995]: waitForService: Service [/gazebo/set_physics_properties] has not been advertised, waiting...[0m
+Error setting socket option (IP_ADD_MEMBERSHIP).
+Error setting socket option (IP_ADD_MEMBERSHIP).
+[WARN] [1793182479.390744, 0.000000]: Waiting for Gazebo services to become available...
+[WARN] [1793182479.451722, 0.000000]: waiting for turtlebot3_burger to be spawned into Gazebo world
+[INFO] [1793182477.879430, 0.000000]: Loading model XML from ros parameter robot_description
+[INFO] [1793182477.913803, 0.000000]: Waiting for service /gazebo/spawn_urdf_model
+[INFO] [1793182479.448216, 0.000000]: Calling service /gazebo/spawn_urdf_model
+[INFO] [1793182480.069038, 0.001000]: Spawn status: SpawnModel: Successfully spawned entity
+[WARN] [1793182480.086028, 0.001000]: robot model exists, waiting for fresh /odom data
+[INFO] [1793182477.176120, 0.000000]: 统一巡逻控制器已就绪，等待全局路径。
+[INFO] [1793182481.138578, 0.508000]: Generated patrol path with 345 cells and 10 checkpoints
+[INFO] [1793182481.143504, 0.509000]: Checkpoint 1: (-7.00, 0.00)
+[INFO] [1793182481.147405, 0.511000]: Checkpoint 2: (-7.00, -3.00)
+[INFO] [1793182481.153251, 0.515000]: Checkpoint 3: (-7.00, -6.00)
+[INFO] [1793182481.156964, 0.516000]: Checkpoint 4: (0.00, -6.25)
+[INFO] [1793182481.161465, 0.520000]: Checkpoint 5: (7.00, -6.00)
+[INFO] [1793182481.167134, 0.521000]: Checkpoint 6: (7.00, 0.00)
+[INFO] [1793182481.172005, 0.524000]: Checkpoint 7: (7.00, 6.00)
+[INFO] [1793182481.175744, 0.528000]: Checkpoint 8: (0.00, 6.25)
+[INFO] [1793182481.180075, 0.531000]: Checkpoint 9: (-7.00, 6.00)
+[INFO] [1793182481.186241, 0.537000]: Checkpoint 10: (-7.00, 3.25)
+[0m[ INFO] [1793182479.365722501]: waitForService: Service [/gazebo/set_physics_properties] is now available.[0m
+[0m[ INFO] [1793182480.107039998, 0.001000000]: Laser Plugin: Using the 'robotNamespace' param: '/'[0m
+[0m[ INFO] [1793182480.121513215, 0.001000000]: Starting Laser Plugin (ns = /)[0m
+[0m[ INFO] [1793182480.121845741, 0.001000000]: Physics dynamic reconfigure ready.[0m
+[0m[ INFO] [1793182480.126224267, 0.001000000]: Laser Plugin (ns = /)  <tf_prefix_>, set to ""[0m
+[0m[ INFO] [1793182480.189381349, 0.001000000]: Starting plugin DiffDrive(ns = //)[0m
+[0m[ INFO] [1793182480.189847376, 0.001000000]: DiffDrive(ns = //): <rosDebugLevel> = na[0m
+[0m[ INFO] [1793182480.194365991, 0.001000000]: DiffDrive(ns = //): <tf_prefix> = [0m
+[0m[ INFO] [1793182480.198142448, 0.001000000]: DiffDrive(ns = //): Advertise joint_states[0m
+[0m[ INFO] [1793182480.200532553, 0.001000000]: DiffDrive(ns = //): Try to subscribe to cmd_vel[0m
+[0m[ INFO] [1793182480.209524443, 0.001000000]: DiffDrive(ns = //): Subscribe to cmd_vel[0m
+[0m[ INFO] [1793182480.212120836, 0.001000000]: DiffDrive(ns = //): Advertise odom on odom [0m
+... logging to /home/la/.ros/log/5f19a180-d2b8-11f1-a1da-000c291a0e76/roslaunch-ubuntu-33226.log
+Checking log directory for disk usage. This may take a while.
+Press Ctrl-C to interrupt
+Done checking log file disk usage. Usage is <1GB.
+]2;/home/la/catkin_ws/src/warehouse_patrol_v2/launch/patrol.launch
+[1mstarted roslaunch server http://ubuntu:41493/[0m
+
+SUMMARY
+========
+
+PARAMETERS
+ * /gazebo/enable_ros_network: True
+ * /robot_description: <?xml version="1....
+ * /robot_state_publisher/publish_frequency: 30.0
+ * /rosdistro: melodic
+ * /rosversion: 1.14.13
+ * /use_sim_time: True
+ * /warehouse_navigation_core/retry_interval: 3.0
+ * /warehouse_navigation_core/service_timeout: 30.0
+ * /warehouse_navigation_core/startup_timeout: 45.0
+ * /warehouse_patrol_manager/autostart: True
+ * /warehouse_patrol_manager/loop_patrol: True
+
+NODES
+  /
+    gazebo (gazebo_ros/gzserver)
+    robot_state_publisher (robot_state_publisher/robot_state_publisher)
+    spawn_burger (gazebo_ros/spawn_model)
+    warehouse_navigation_core (warehouse_patrol_bot/warehouse_navigation_core.py)
+    warehouse_patrol_manager (warehouse_patrol_bot/warehouse_unified_navigation.py)
+
+auto-starting new master
+[1mprocess[master]: started with pid [33251][0m
+[1mROS_MASTER_URI=http://localhost:11311[0m
+]2;/home/la/catkin_ws/src/warehouse_patrol_v2/launch/patrol.launch http://localhost:11311
+[1msetting /run_id to 5f19a180-d2b8-11f1-a1da-000c291a0e76[0m
+[1mprocess[rosout-1]: started with pid [33262][0m
+started core service [/rosout]
+[1mprocess[gazebo-2]: started with pid [33265][0m
+[1mprocess[robot_state_publisher-3]: started with pid [33271][0m
+[1mprocess[spawn_burger-4]: started with pid [33275][0m
+[1mprocess[warehouse_navigation_core-5]: started with pid [33276][0m
+[1mprocess[warehouse_patrol_manager-6]: started with pid [33277][0m
+[1m[spawn_burger-4] process has finished cleanly
+log file: /home/la/.ros/log/5f19a180-d2b8-11f1-a1da-000c291a0e76/spawn_burger-4*.log[0m
+[warehouse_patrol_manager-6] killing on exit
+[gazebo-2] killing on exit
+[robot_state_publisher-3] killing on exit
+[warehouse_navigation_core-5] killing on exit
+[rosout-1] killing on exit
+[master] killing on exit
+shutting down processing monitor...
+... shutting down processing monitor complete
+[1mdone[0m

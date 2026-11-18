@@ -1,0 +1,4 @@
+start={}
+end={}
+cmd_vel_rows=345
+cmd_vel_nonzero_rows=0

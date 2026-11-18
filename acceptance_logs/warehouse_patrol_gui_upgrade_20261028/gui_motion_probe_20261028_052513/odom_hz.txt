@@ -1,0 +1,24 @@
+WARNING: may be using simulated time
+subscribed to [/odom]
+average rate: 29.963
+	min: 0.027s max: 0.039s std dev: 0.00335s window: 9
+average rate: 29.987
+	min: 0.027s max: 0.039s std dev: 0.00237s window: 24
+average rate: 29.985
+	min: 0.027s max: 0.039s std dev: 0.00188s window: 41
+average rate: 29.973
+	min: 0.027s max: 0.039s std dev: 0.00172s window: 56
+average rate: 29.996
+	min: 0.027s max: 0.039s std dev: 0.00197s window: 72
+average rate: 29.993
+	min: 0.027s max: 0.039s std dev: 0.00189s window: 86
+average rate: 29.991
+	min: 0.027s max: 0.041s std dev: 0.00201s window: 103
+average rate: 30.008
+	min: 0.027s max: 0.041s std dev: 0.00200s window: 118
+average rate: 29.975
+	min: 0.027s max: 0.041s std dev: 0.00200s window: 134
+average rate: 30.000
+	min: 0.027s max: 0.041s std dev: 0.00200s window: 151
+average rate: 30.000
+	min: 0.027s max: 0.041s std dev: 0.00196s window: 157

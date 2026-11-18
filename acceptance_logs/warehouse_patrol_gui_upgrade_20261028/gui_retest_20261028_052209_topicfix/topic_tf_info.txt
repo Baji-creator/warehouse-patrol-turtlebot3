@@ -1,0 +1,10 @@
+Type: tf2_msgs/TFMessage
+
+Publishers: 
+ * /robot_state_publisher (http://ubuntu:46795/)
+ * /gazebo (http://ubuntu:46169/)
+
+Subscribers: 
+ * /warehouse_patrol_rviz (http://ubuntu:41557/)
+
+

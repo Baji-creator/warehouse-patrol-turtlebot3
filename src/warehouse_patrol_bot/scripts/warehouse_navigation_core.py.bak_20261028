@@ -1,0 +1,210 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import math
+import heapq
+import rospy
+
+from geometry_msgs.msg import PoseStamped
+from nav_msgs.msg import Path, OccupancyGrid
+from gazebo_msgs.srv import GetWorldProperties, GetModelState
+
+
+def astar(start, goal, blocked, bounds, resolution):
+    xmin, xmax, ymin, ymax = bounds
+
+    def inside(p):
+        return xmin <= p[0] <= xmax and ymin <= p[1] <= ymax
+
+    def h(a, b):
+        return abs(a[0] - b[0]) + abs(a[1] - b[1])
+
+    queue = [(h(start, goal), 0, start)]
+    parent = {start: None}
+    cost = {start: 0}
+
+    while queue:
+        _, g, cur = heapq.heappop(queue)
+        if cur == goal:
+            break
+        if g != cost.get(cur):
+            continue
+
+        for nxt in ((cur[0]+1,cur[1]), (cur[0]-1,cur[1]),
+                    (cur[0],cur[1]+1), (cur[0],cur[1]-1)):
+            if not inside(nxt) or nxt in blocked:
+                continue
+            ng = g + 1
+            if ng < cost.get(nxt, float('inf')):
+                cost[nxt] = ng
+                parent[nxt] = cur
+                heapq.heappush(queue, (ng+h(nxt,goal),ng,nxt))
+
+    if goal not in parent:
+        return []
+
+    path = []
+    cur = goal
+    while cur is not None:
+        path.append(cur)
+        cur = parent[cur]
+    path.reverse()
+    return path
+
+
+def main():
+    rospy.init_node('warehouse_navigation_core', anonymous=False)
+
+    resolution = 0.25
+    bounds = (-9.0, 9.0, -9.0, 9.0)
+    xmin, xmax, ymin, ymax = bounds
+
+    rospy.wait_for_service('/gazebo/get_world_properties', timeout=10)
+    rospy.wait_for_service('/gazebo/get_model_state', timeout=10)
+    world = rospy.ServiceProxy('/gazebo/get_world_properties',
+                               GetWorldProperties)
+    get_model = rospy.ServiceProxy('/gazebo/get_model_state',
+                                   GetModelState)
+
+    properties = world()
+    names = set(properties.model_names)
+
+    if 'turtlebot3_burger' not in names:
+        raise RuntimeError('TurtleBot model not found in current Gazebo world')
+
+    robot = get_model('turtlebot3_burger', 'world')
+    if not robot.success:
+        raise RuntimeError('Cannot read TurtleBot world pose')
+
+    rx = robot.pose.position.x
+    ry = robot.pose.position.y
+
+    rospy.loginfo('Current robot world pose: x=%.2f y=%.2f', rx, ry)
+
+    # Conservative grid inflation around observed rack, partition and
+    # obstacle model centers. This is an initial geometric approximation;
+    # LiDAR remains the runtime safety layer.
+    blocked = set()
+    obstacle_prefixes = ('rack_', 'shelf_', 'left_partition_', 'right_partition_',
+                         'obstacle_', 'north_wall', 'south_wall',
+                         'east_wall', 'west_wall')
+
+    for name in names:
+        if not name.startswith(obstacle_prefixes):
+            continue
+        try:
+            state = get_model(name, 'world')
+            if not state.success:
+                continue
+            ox = state.pose.position.x
+            oy = state.pose.position.y
+
+            if name.startswith('rack_'):
+                radius_x, radius_y = 0.90, 0.90
+            elif name.startswith('shelf_'):
+                radius_x, radius_y = 0.35, 0.35
+            elif 'partition' in name:
+                radius_x, radius_y = 0.30, 0.45
+            elif name.endswith('_wall'):
+                radius_x, radius_y = 0.45, 0.45
+            else:
+                radius_x, radius_y = 0.42, 0.42
+
+            ix0 = int(math.floor((ox-radius_x-xmin)/resolution))
+            ix1 = int(math.ceil((ox+radius_x-xmin)/resolution))
+            iy0 = int(math.floor((oy-radius_y-ymin)/resolution))
+            iy1 = int(math.ceil((oy+radius_y-ymin)/resolution))
+
+            for ix in range(ix0, ix1+1):
+                for iy in range(iy0, iy1+1):
+                    blocked.add((ix, iy))
+        except rospy.ServiceException:
+            continue
+
+    def cell(x, y):
+        return (int(round((x-xmin)/resolution)),
+                int(round((y-ymin)/resolution)))
+
+    def xy(c):
+        return (xmin+c[0]*resolution, ymin+c[1]*resolution)
+
+    # Use current position as the start; plan toward the opposite open
+    # side of the warehouse. The endpoint is adjusted if occupied.
+    start = cell(rx, ry)
+    goal = cell(6.0, 4.8)
+
+    blocked.discard(start)
+    if goal in blocked:
+        candidates = sorted(
+            (c for c in blocked if False), key=lambda c: 0
+        )
+        goal = cell(6.0, 3.5)
+
+    path_cells = astar(start, goal, blocked, (
+        0, int(round((xmax-xmin)/resolution)),
+        0, int(round((ymax-ymin)/resolution))), resolution)
+
+    if len(path_cells) < 2:
+        # Try a different accessible endpoint before failing safely.
+        for gx, gy in ((6.0,3.5), (6.0,2.0), (5.0,4.0),
+                       (0.0,0.0), (-5.0,3.5)):
+            candidate = cell(gx, gy)
+            if candidate in blocked:
+                continue
+            path_cells = astar(start, candidate, blocked, (
+                0, int(round((xmax-xmin)/resolution)),
+                0, int(round((ymax-ymin)/resolution))), resolution)
+            if len(path_cells) >= 2:
+                goal = candidate
+                break
+
+    if len(path_cells) < 2:
+        raise RuntimeError('No safe grid path found; robot controller unchanged')
+
+    path_msg = Path()
+    path_msg.header.frame_id = 'odom'
+    path_msg.header.stamp = rospy.Time.now()
+
+    for c in path_cells:
+        x, y = xy(c)
+        pose = PoseStamped()
+        pose.header = path_msg.header
+        pose.pose.position.x = x
+        pose.pose.position.y = y
+        pose.pose.orientation.w = 1.0
+        path_msg.poses.append(pose)
+
+    grid = OccupancyGrid()
+    grid.header.frame_id = 'odom'
+    grid.header.stamp = rospy.Time.now()
+    grid.info.resolution = resolution
+    grid.info.width = int(round((xmax-xmin)/resolution)) + 1
+    grid.info.height = int(round((ymax-ymin)/resolution)) + 1
+    grid.info.origin.position.x = xmin
+    grid.info.origin.position.y = ymin
+    grid.info.origin.orientation.w = 1.0
+    grid.data = [0] * (grid.info.width * grid.info.height)
+
+    for ix, iy in blocked:
+        if 0 <= ix < grid.info.width and 0 <= iy < grid.info.height:
+            grid.data[iy*grid.info.width+ix] = 100
+
+    path_pub = rospy.Publisher('/warehouse_patrol/global_path',
+                               Path, queue_size=1, latch=True)
+    map_pub = rospy.Publisher('/warehouse_patrol/grid_map',
+                              OccupancyGrid, queue_size=1, latch=True)
+
+    rate = rospy.Rate(1)
+    while not rospy.is_shutdown():
+        now = rospy.Time.now()
+        path_msg.header.stamp = now
+        grid.header.stamp = now
+        for pose in path_msg.poses:
+            pose.header.stamp = now
+        path_pub.publish(path_msg)
+        map_pub.publish(grid)
+        rate.sleep()
+
+
+if __name__ == '__main__':
+    main()

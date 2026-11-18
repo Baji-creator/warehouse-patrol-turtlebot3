@@ -1,0 +1,2 @@
+PASS: all existing warehouse collision geometry and model poses unchanged
+PASS: floor markings remain non-colliding

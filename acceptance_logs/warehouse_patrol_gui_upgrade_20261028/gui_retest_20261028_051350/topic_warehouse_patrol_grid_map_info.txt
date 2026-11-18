@@ -1,0 +1,11 @@
+Type: nav_msgs/OccupancyGrid
+
+Publishers: 
+ * /warehouse_navigation_core (http://ubuntu:37673/)
+
+Subscribers: 
+ * /warehouse_patrol_manager (http://ubuntu:42131/)
+ * /warehouse_patrol_rviz (http://ubuntu:39245/)
+ * /gui_upgrade_inventory_81557_1793188618555 (http://ubuntu:38425/)
+
+

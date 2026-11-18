@@ -1,0 +1,41 @@
+<launch>
+  <arg name="x" default="-7.0"/>
+  <arg name="y" default="0.0"/>
+  <arg name="z" default="0.05"/>
+  <arg name="gui" default="true"/>
+  <arg name="headless" default="false"/>
+  <arg name="use_rviz" default="false"/>
+
+  <param name="/use_sim_time" value="true"/>
+
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find warehouse_patrol_v2)/worlds/complex_warehouse.world"/>
+    <arg name="paused" value="false"/>
+    <arg name="use_sim_time" value="true"/>
+    <arg name="gui" value="$(arg gui)"/>
+    <arg name="headless" value="$(arg headless)"/>
+    <arg name="debug" value="false"/>
+  </include>
+
+  <param name="robot_description"
+         command="$(find xacro)/xacro --inorder '$(find turtlebot3_description)/urdf/turtlebot3_burger.urdf.xacro'"/>
+
+  <node pkg="robot_state_publisher" type="robot_state_publisher"
+        name="robot_state_publisher" output="screen">
+    <param name="publish_frequency" value="30.0"/>
+  </node>
+
+  <node pkg="warehouse_patrol_bot" type="spawn_turtlebot3_if_needed.py" name="spawn_burger"
+        output="screen">
+    <param name="model_name" value="turtlebot3_burger"/>
+    <param name="robot_description_param" value="robot_description"/>
+    <param name="x" value="$(arg x)"/>
+    <param name="y" value="$(arg y)"/>
+    <param name="z" value="$(arg z)"/>
+    <param name="reference_frame" value="world"/>
+  </node>
+
+  <node if="$(arg use_rviz)" pkg="rviz" type="rviz" name="warehouse_rviz"
+        args="-d $(find warehouse_patrol_bot)/rviz/warehouse_patrol.rviz"
+        output="screen"/>
+</launch>

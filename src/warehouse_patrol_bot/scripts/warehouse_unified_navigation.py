@@ -1,0 +1,355 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import math
+import threading
+
+import actionlib
+import rospy
+from geometry_msgs.msg import Twist
+from nav_msgs.msg import OccupancyGrid, Odometry, Path
+from sensor_msgs.msg import LaserScan
+from std_msgs.msg import String
+from warehouse_patrol_bot.msg import PatrolAction, PatrolFeedback, PatrolResult, PatrolStatus
+from warehouse_patrol_bot.srv import PatrolControl, PatrolControlResponse
+
+
+class UnifiedNavigation(object):
+    def __init__(self):
+        rospy.init_node('warehouse_patrol_manager')
+        self.lock = threading.RLock()
+
+        self.path = []
+        self.path_index = 0
+        self.checkpoints = []
+        self.checkpoint_index = 0
+        self.map = None
+        self.pose = None
+        self.yaw = 0.0
+        self.scan = None
+
+        self.state = 'IDLE'
+        self.message = '等待路径、里程计与雷达数据'
+        self.repeat = bool(rospy.get_param('~loop_patrol', True))
+        self.loop_patrol = bool(rospy.get_param('~loop_patrol', True))
+        self.autostart = bool(rospy.get_param('~autostart', False))
+        self.autostart_done = False
+        self.cancel = False
+        self.action_active = False
+
+        self.goal_tolerance = float(rospy.get_param('~goal_tolerance', 0.22))
+        self.checkpoint_tolerance = float(rospy.get_param('~checkpoint_tolerance', 0.50))
+        self.last_odom = rospy.Time(0)
+        self.last_scan = rospy.Time(0)
+        self.last_status = rospy.Time(0)
+
+        self.pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
+        self.status_pub = rospy.Publisher('/warehouse_patrol/status', PatrolStatus, queue_size=10, latch=True)
+        self.state_pub = rospy.Publisher('/warehouse_patrol/state', String, queue_size=10, latch=True)
+
+        rospy.Subscriber('/warehouse_patrol/global_path', Path, self.path_cb, queue_size=1)
+        rospy.Subscriber('/warehouse_patrol/grid_map', OccupancyGrid, self.map_cb, queue_size=1)
+        rospy.Subscriber('/odom', Odometry, self.odom_cb, queue_size=1)
+        rospy.Subscriber('/scan', LaserScan, self.scan_cb, queue_size=1)
+
+        self.service = rospy.Service('/warehouse_patrol/control', PatrolControl, self.control_cb)
+        self.action = actionlib.SimpleActionServer('/warehouse_patrol/patrol', PatrolAction, execute_cb=self.execute_cb, auto_start=False)
+        self.action.start()
+
+        rospy.Timer(rospy.Duration(0.1), self.loop)
+        rospy.on_shutdown(self.stop)
+        self.publish_status(0.0)
+        rospy.loginfo('统一巡逻控制器已就绪，等待全局路径。')
+
+    def refresh_checkpoints(self):
+        raw = rospy.get_param('/warehouse_patrol/checkpoints', [])
+        checkpoints = []
+        for item in raw:
+            if isinstance(item, list) and len(item) >= 2:
+                checkpoints.append((float(item[0]), float(item[1])))
+        if checkpoints:
+            self.checkpoints = checkpoints
+
+    def path_cb(self, msg):
+        with self.lock:
+            self.path = [(pose.pose.position.x, pose.pose.position.y) for pose in msg.poses]
+            if self.path_index >= len(self.path):
+                self.path_index = 0
+            self.refresh_checkpoints()
+            if self.checkpoint_index >= len(self.checkpoints):
+                self.checkpoint_index = 0
+
+    def map_cb(self, msg):
+        with self.lock:
+            self.map = msg
+
+    def odom_cb(self, msg):
+        q = msg.pose.pose.orientation
+        p = msg.pose.pose.position
+        yaw = math.atan2(2.0 * (q.w * q.z + q.x * q.y), 1.0 - 2.0 * (q.y * q.y + q.z * q.z))
+        with self.lock:
+            self.pose = (p.x, p.y)
+            self.yaw = yaw
+            self.last_odom = rospy.Time.now()
+
+    def scan_cb(self, msg):
+        with self.lock:
+            self.scan = msg
+            self.last_scan = rospy.Time.now()
+
+    def angle_error(self, angle):
+        return math.atan2(math.sin(angle), math.cos(angle))
+
+    def sector_min(self, center, width):
+        scan = self.scan
+        if scan is None:
+            return 0.0
+        values = []
+        for index, distance in enumerate(scan.ranges):
+            angle = scan.angle_min + index * scan.angle_increment
+            if abs(self.angle_error(angle - center)) > width:
+                continue
+            if math.isnan(distance) or math.isinf(distance):
+                continue
+            if scan.range_min < distance < scan.range_max:
+                values.append(distance)
+        return min(values) if values else scan.range_max
+
+    def stop(self):
+        self.pub.publish(Twist())
+
+    def total_checkpoints(self):
+        if len(self.checkpoints) > 1 and self.checkpoints[0] == self.checkpoints[-1]:
+            return len(self.checkpoints) - 1
+        return len(self.checkpoints)
+
+    def current_checkpoint(self):
+        if not self.checkpoints:
+            return None
+        index = min(self.checkpoint_index, len(self.checkpoints) - 1)
+        return self.checkpoints[index]
+
+    def distance_to_path_target(self):
+        if self.pose is None or not self.path:
+            return 0.0
+        target = self.path[min(self.path_index, len(self.path) - 1)]
+        return math.hypot(target[0] - self.pose[0], target[1] - self.pose[1])
+
+    def distance_to_checkpoint(self):
+        checkpoint = self.current_checkpoint()
+        if self.pose is None or checkpoint is None:
+            return 0.0
+        return math.hypot(checkpoint[0] - self.pose[0], checkpoint[1] - self.pose[1])
+
+    def nearest_index(self, points):
+        return min(range(len(points)), key=lambda index: (points[index][0] - self.pose[0]) ** 2 + (points[index][1] - self.pose[1]) ** 2)
+
+    def start_patrol(self, message, repeat=None):
+        if not self.path:
+            return False, '没有全局路径，无法启动巡逻'
+        if self.pose is None or self.scan is None:
+            return False, '尚未收到有效里程计或雷达数据'
+
+        self.refresh_checkpoints()
+        self.path_index = self.nearest_index(self.path)
+        if self.checkpoints:
+            self.checkpoint_index = self.nearest_index(self.checkpoints)
+        else:
+            self.checkpoint_index = 0
+
+        self.repeat = self.loop_patrol if repeat is None else bool(repeat)
+        self.cancel = False
+        self.state = 'RUNNING'
+        self.message = message
+        return True, self.message
+
+    def publish_status(self, distance):
+        status = PatrolStatus()
+        status.header.stamp = rospy.Time.now()
+        status.state = self.state
+        total = self.total_checkpoints()
+        status.waypoint_index = min(self.checkpoint_index + 1, total) if total > 0 else 0
+        status.total_waypoints = total
+        status.distance_to_waypoint = float(distance)
+        status.message = self.message
+        self.status_pub.publish(status)
+        self.state_pub.publish(String(data=self.state))
+
+    def control_cb(self, req):
+        command = req.command.strip().lower()
+        with self.lock:
+            if command in ('start', 'resume', 'continue'):
+                ok, message = self.start_patrol('沿 A* 全局路径巡逻')
+                if not ok:
+                    return PatrolControlResponse(False, message)
+                self.autostart_done = True
+            elif command == 'pause':
+                self.state = 'PAUSED'
+                self.message = '已暂停巡逻'
+            elif command == 'stop':
+                self.state = 'STOPPED'
+                self.message = '已停止巡逻'
+                self.cancel = True
+                self.autostart_done = True
+            elif command == 'reset':
+                self.path_index = 0
+                self.checkpoint_index = 0
+                self.state = 'IDLE'
+                self.message = '已重置巡逻状态'
+                self.cancel = True
+                self.autostart_done = True
+            else:
+                return PatrolControlResponse(False, '命令应为 start/pause/resume/stop/reset')
+        self.stop()
+        self.publish_status(self.distance_to_checkpoint())
+        return PatrolControlResponse(True, self.message)
+
+    def execute_cb(self, goal):
+        with self.lock:
+            ok, message = self.start_patrol('Action 巡逻任务执行中', goal.repeat)
+            if not ok:
+                result = PatrolResult()
+                result.success = False
+                result.message = message
+                self.action.set_aborted(result)
+                return
+            self.action_active = True
+            self.autostart_done = True
+
+        rate = rospy.Rate(5)
+        result = PatrolResult()
+        while not rospy.is_shutdown():
+            with self.lock:
+                distance = self.distance_to_checkpoint()
+                if self.action.is_preempt_requested() or self.cancel:
+                    self.stop()
+                    result.success = False
+                    result.message = '任务已取消'
+                    self.action_active = False
+                    self.action.set_preempted(result)
+                    return
+                if self.state == 'SUCCEEDED' and not self.repeat:
+                    result.success = True
+                    result.message = '巡逻完成'
+                    self.action_active = False
+                    self.action.set_succeeded(result)
+                    return
+                if self.state == 'ABORTED':
+                    result.success = False
+                    result.message = self.message
+                    self.action_active = False
+                    self.action.set_aborted(result)
+                    return
+
+                feedback = PatrolFeedback()
+                feedback.waypoint_index = min(self.checkpoint_index + 1, self.total_checkpoints())
+                feedback.total_waypoints = self.total_checkpoints()
+                feedback.distance_to_waypoint = float(distance)
+                feedback.state = self.state
+                self.action.publish_feedback(feedback)
+            rate.sleep()
+
+        self.stop()
+        result.success = False
+        result.message = 'ROS 已关闭'
+        self.action_active = False
+        self.action.set_aborted(result)
+
+    def advance_progress(self):
+        while self.path and self.path_index < len(self.path) - 1 and self.distance_to_path_target() < self.goal_tolerance:
+            self.path_index += 1
+        while self.checkpoints and self.checkpoint_index < len(self.checkpoints) - 1 and self.distance_to_checkpoint() < self.checkpoint_tolerance:
+            self.checkpoint_index += 1
+            self.message = '已到达巡逻点 %d/%d' % (min(self.checkpoint_index, self.total_checkpoints()), self.total_checkpoints())
+
+    def complete_cycle_if_needed(self):
+        if not self.path:
+            return False
+        if self.path_index < len(self.path) - 1:
+            return False
+        if self.distance_to_path_target() >= self.goal_tolerance:
+            return False
+
+        if self.repeat:
+            self.path_index = 0
+            self.checkpoint_index = 0
+            self.message = '完成一圈巡逻，继续下一圈'
+            return True
+
+        self.stop()
+        self.state = 'SUCCEEDED'
+        self.message = '巡逻完成'
+        return True
+
+    def loop(self, _event):
+        with self.lock:
+            distance = self.distance_to_checkpoint()
+            now = rospy.Time.now()
+
+            if self.autostart and not self.autostart_done and self.state == 'IDLE' and self.path and self.pose is not None and self.scan is not None:
+                ok, message = self.start_patrol('自动启动仓库巡逻')
+                if ok:
+                    self.autostart_done = True
+                else:
+                    self.message = message
+
+            cmd = Twist()
+            if self.state == 'RUNNING':
+                if (not self.path or self.pose is None or self.scan is None or
+                        (now - self.last_odom).to_sec() > 1.0 or
+                        (now - self.last_scan).to_sec() > 1.0):
+                    self.stop()
+                    self.state = 'PAUSED'
+                    self.message = '传感器数据超时，安全停车'
+                else:
+                    self.advance_progress()
+                    if self.complete_cycle_if_needed():
+                        distance = self.distance_to_checkpoint()
+                    else:
+                        target = self.path[min(self.path_index, len(self.path) - 1)]
+                        dx = target[0] - self.pose[0]
+                        dy = target[1] - self.pose[1]
+                        heading = math.atan2(dy, dx)
+                        error = self.angle_error(heading - self.yaw)
+
+                        front = self.sector_min(0.0, math.radians(20.0))
+                        left = self.sector_min(math.radians(60.0), math.radians(30.0))
+                        right = self.sector_min(math.radians(-60.0), math.radians(30.0))
+
+                        if front < 0.28:
+                            cmd.linear.x = 0.0
+                            if left > right + 0.08:
+                                cmd.angular.z = 0.28
+                                self.message = '近距离障碍，向左避让'
+                            elif right > left + 0.08:
+                                cmd.angular.z = -0.28
+                                self.message = '近距离障碍，向右避让'
+                            else:
+                                cmd.angular.z = 0.0
+                                self.message = '前方障碍过近，安全停车'
+                        else:
+                            if abs(error) > 0.35:
+                                cmd.linear.x = 0.0
+                                cmd.angular.z = max(-0.45, min(0.45, 1.10 * error))
+                            else:
+                                cmd.linear.x = min(0.20, max(0.06, 0.55 * self.distance_to_path_target()))
+                                if front < 0.55:
+                                    cmd.linear.x = min(cmd.linear.x, 0.08)
+                                cmd.angular.z = max(-0.25, min(0.25, 0.80 * error))
+                            self.message = '沿 A* 全局路径巡逻'
+                        self.pub.publish(cmd)
+                        distance = self.distance_to_checkpoint()
+            else:
+                self.stop()
+
+            if (now - self.last_status).to_sec() > 0.5:
+                self.publish_status(distance)
+                self.last_status = now
+
+
+if __name__ == '__main__':
+    try:
+        UnifiedNavigation()
+        rospy.spin()
+    except rospy.ROSInterruptException:
+        pass

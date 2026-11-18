@@ -1,0 +1,3 @@
+=== PRE_PROCESS ===
+=== PRE_ROSNODE ===
+ERROR: Unable to communicate with master!

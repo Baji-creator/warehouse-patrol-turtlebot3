@@ -1,0 +1,67 @@
+{
+  "odom_frame": "odom", 
+  "scan_hz_sim": 7.98699660902951, 
+  "sim_duration": 34.833, 
+  "distance_travelled": 5.466275755707466, 
+  "scan_samples": 540, 
+  "path_outside_grid": 0, 
+  "odom_hz_sim": 30.000279072363465, 
+  "finite_returns": 523, 
+  "robot_count": 1, 
+  "scan_range_max": 6.0, 
+  "counts": {
+    "status": 64, 
+    "scan": 287, 
+    "cmd": 359, 
+    "grid": 36, 
+    "odom": 1077, 
+    "path": 36
+  }, 
+  "waypoints_seen": [
+    2, 
+    3
+  ], 
+  "grid_frame": "odom", 
+  "tf_errors": [], 
+  "end": {
+    "tf_world_error": 0.0008573106379919706, 
+    "scan_tf": [
+      -6.997187105233017, 
+      -5.42565141842618, 
+      0.18123871239735584
+    ], 
+    "wall_elapsed": 64.9679799079895, 
+    "state": "RUNNING", 
+    "sim_time": 35.367, 
+    "waypoint": 3, 
+    "w": -0.0016462036853631902, 
+    "v": 0.17143522144216003, 
+    "y": -5.457098818837724, 
+    "x": -6.997410516244806
+  }, 
+  "grid_size": [
+    73, 
+    73
+  ], 
+  "path_blocked_cells": 0, 
+  "path_poses": 345, 
+  "start": {
+    "tf_world_error": 1.5094609257151395e-06, 
+    "scan_tf": [
+      -7.030745828091601, 
+      2.465285776087972e-05, 
+      0.18123925975820954
+    ], 
+    "wall_elapsed": 0.010063886642456055, 
+    "state": "RUNNING", 
+    "sim_time": 0.534, 
+    "waypoint": 2, 
+    "w": -0.45, 
+    "v": 0.0, 
+    "y": 1.6383089087029673e-05, 
+    "x": -7.00015054126558
+  }, 
+  "wall_duration": 65.97108292579651, 
+  "scan_frame": "base_scan", 
+  "path_frame": "odom"
+}

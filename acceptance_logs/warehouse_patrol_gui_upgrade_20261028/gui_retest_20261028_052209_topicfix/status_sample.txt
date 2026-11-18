@@ -1,0 +1,12 @@
+header: 
+  seq: 1
+  stamp: 
+    secs: 14
+    nsecs: 603000000
+  frame_id: ''
+state: "RUNNING"
+waypoint_index: 2
+total_waypoints: 10
+distance_to_waypoint: 1.17629575729
+message: !!python/str "\u6CBF A* \u5168\u5C40\u8DEF\u5F84\u5DE1\u903B"
+---

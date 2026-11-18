@@ -1,0 +1,11 @@
+('STOP', success: True
+message: !!python/str "\u5DF2\u505C\u6B62\u5DE1\u903B")
+('STATUS_AFTER_STOP', 'STOPPED', 4, 10)
+('START', success: True
+message: !!python/str "\u6CBF A* \u5168\u5C40\u8DEF\u5F84\u5DE1\u903B")
+('STATUS_AFTER_START', 'RUNNING', 3, 10)
+('ACTION_SERVER', True)
+('ACTION_STATE_AFTER_SEND', 1)
+('ACTION_STATE_AFTER_CANCEL', 2)
+('ACTION_RESULT', success: False
+message: !!python/str "\u4EFB\u52A1\u5DF2\u53D6\u6D88")

@@ -1,0 +1,3 @@
+<launch>
+  <node pkg="warehouse_patrol_bot" type="patrol_manager.py" name="warehouse_patrol_manager" output="screen" />
+</launch>

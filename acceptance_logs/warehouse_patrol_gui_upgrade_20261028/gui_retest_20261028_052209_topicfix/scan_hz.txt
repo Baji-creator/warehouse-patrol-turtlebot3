@@ -1,0 +1,22 @@
+WARNING: may be using simulated time
+subscribed to [/scan]
+average rate: 7.722
+	min: 0.125s max: 0.134s std dev: 0.00450s window: 3
+average rate: 7.905
+	min: 0.121s max: 0.134s std dev: 0.00386s window: 7
+average rate: 7.902
+	min: 0.121s max: 0.134s std dev: 0.00324s window: 10
+average rate: 7.942
+	min: 0.121s max: 0.134s std dev: 0.00304s window: 13
+average rate: 7.941
+	min: 0.121s max: 0.134s std dev: 0.00289s window: 16
+average rate: 7.954
+	min: 0.121s max: 0.134s std dev: 0.00288s window: 19
+average rate: 7.968
+	min: 0.121s max: 0.134s std dev: 0.00293s window: 23
+average rate: 7.968
+	min: 0.121s max: 0.134s std dev: 0.00276s window: 27
+average rate: 7.971
+	min: 0.121s max: 0.134s std dev: 0.00260s window: 32
+average rate: 7.971
+	min: 0.121s max: 0.134s std dev: 0.00247s window: 36

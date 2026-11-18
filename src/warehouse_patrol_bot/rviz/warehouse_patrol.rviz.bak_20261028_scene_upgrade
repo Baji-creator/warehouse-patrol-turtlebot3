@@ -1,0 +1,101 @@
+Panels:
+  - Class: rviz/Displays
+    Help Height: 78
+    Name: Displays
+    Property Tree Widget:
+      Expanded:
+        - /Global Options1
+        - /Map1
+        - /Path1
+        - /RobotModel1
+        - /TF1
+        - /LaserScan1
+      Splitter Ratio: 0.5
+    Tree Height: 650
+Visualization Manager:
+  Class: ""
+  Displays:
+    - Class: rviz/Grid
+      Enabled: true
+      Name: Grid
+      Plane: XY
+      Cell Size: 1
+      Color: 160; 160; 164
+      Alpha: 0.5
+      Line Style:
+        Line Width: 0.03
+        Value: Lines
+      Reference Frame: <Fixed Frame>
+    - Class: rviz/Map
+      Enabled: true
+      Name: Map
+      Topic: /warehouse_patrol/grid_map
+      Color Scheme: map
+      Alpha: 0.35
+      Draw Behind: true
+    - Class: rviz/Path
+      Enabled: true
+      Name: Path
+      Topic: /warehouse_patrol/global_path
+      Color: 25; 255; 0
+      Alpha: 1
+      Buffer Length: 1
+      Line Style: Billboards
+      Line Width: 0.06
+      Pose Color: 255; 85; 255
+      Pose Style: None
+      Queue Size: 10
+      Radius: 0.03
+    - Class: rviz/RobotModel
+      Enabled: true
+      Name: RobotModel
+      Robot Description: robot_description
+      TF Prefix: ""
+      Update Interval: 0
+      Visual Enabled: true
+      Collision Enabled: false
+    - Class: rviz/TF
+      Enabled: true
+      Name: TF
+      Frame Timeout: 15
+      Marker Scale: 0.5
+      Show Arrows: true
+      Show Axes: true
+      Show Names: true
+    - Class: rviz/LaserScan
+      Enabled: true
+      Name: LaserScan
+      Topic: /scan
+      Queue Size: 10
+      Style: Points
+      Size (Pixels): 3
+      Size (m): 0.03
+      Color Transformer: FlatColor
+      Color: 255; 0; 0
+      Position Transformer: XYZ
+      Use Fixed Frame: true
+      Selectable: true
+  Enabled: true
+  Global Options:
+    Background Color: 48; 48; 48
+    Fixed Frame: odom
+    Frame Rate: 30
+  Name: root
+  Tools:
+    - Class: rviz/Interact
+    - Class: rviz/MoveCamera
+    - Class: rviz/Select
+  Views:
+    Current:
+      Class: rviz/Orbit
+      Distance: 18
+      Focal Point: {X: 0, Y: 0, Z: 0}
+      Pitch: 0.85
+      Yaw: 0.78
+      Near Clip Distance: 0.01
+      Target Frame: odom
+Window Geometry:
+  Height: 900
+  Width: 1480
+  X: 50
+  Y: 50

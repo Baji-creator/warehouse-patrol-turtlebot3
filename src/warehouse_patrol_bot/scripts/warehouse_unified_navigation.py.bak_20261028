@@ -1,0 +1,288 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import math
+import threading
+import rospy
+import actionlib
+
+from geometry_msgs.msg import Twist
+from nav_msgs.msg import Path, Odometry, OccupancyGrid
+from sensor_msgs.msg import LaserScan
+from std_msgs.msg import String
+from warehouse_patrol_bot.msg import (
+    PatrolAction, PatrolFeedback, PatrolResult, PatrolStatus
+)
+from warehouse_patrol_bot.srv import PatrolControl, PatrolControlResponse
+
+
+class UnifiedNavigation:
+    def __init__(self):
+        rospy.init_node('warehouse_patrol_manager')
+        self.lock = threading.RLock()
+        self.path = []
+        self.map = None
+        self.pose = None
+        self.yaw = 0.0
+        self.scan = None
+        self.state = 'IDLE'
+        self.message = '等待启动'
+        self.index = 0
+        self.repeat = False
+        self.cancel = False
+        self.action_active = False
+        self.last_odom = rospy.Time(0)
+        self.last_scan = rospy.Time(0)
+        self.last_status = rospy.Time(0)
+
+        # 唯一运动命令发布者：整合全局路径跟踪与雷达安全层。
+        self.pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
+        self.status_pub = rospy.Publisher(
+            '/warehouse_patrol/status', PatrolStatus,
+            queue_size=10, latch=True)
+        self.state_pub = rospy.Publisher(
+            '/warehouse_patrol/state', String,
+            queue_size=10, latch=True)
+
+        rospy.Subscriber('/warehouse_patrol/global_path',
+                         Path, self.path_cb, queue_size=1)
+        rospy.Subscriber('/warehouse_patrol/grid_map',
+                         OccupancyGrid, self.map_cb, queue_size=1)
+        rospy.Subscriber('/odom', Odometry, self.odom_cb, queue_size=1)
+        rospy.Subscriber('/scan', LaserScan, self.scan_cb, queue_size=1)
+
+        self.service = rospy.Service(
+            '/warehouse_patrol/control', PatrolControl, self.control_cb)
+        self.action = actionlib.SimpleActionServer(
+            '/warehouse_patrol/patrol', PatrolAction,
+            execute_cb=self.execute_cb, auto_start=False)
+        self.action.start()
+
+        rospy.Timer(rospy.Duration(0.1), self.loop)
+        rospy.on_shutdown(self.stop)
+        rospy.loginfo('统一导航已就绪，等待地图、路径、里程计和雷达。')
+
+    def path_cb(self, msg):
+        with self.lock:
+            self.path = [(p.pose.position.x, p.pose.position.y)
+                         for p in msg.poses]
+            if self.path and self.index >= len(self.path):
+                self.index = 0
+
+    def map_cb(self, msg):
+        with self.lock:
+            self.map = msg
+
+    def odom_cb(self, msg):
+        q = msg.pose.pose.orientation
+        p = msg.pose.pose.position
+        yaw = math.atan2(
+            2.0 * (q.w*q.z + q.x*q.y),
+            1.0 - 2.0 * (q.y*q.y + q.z*q.z))
+        with self.lock:
+            self.pose = (p.x, p.y)
+            self.yaw = yaw
+            self.last_odom = rospy.Time.now()
+
+    def scan_cb(self, msg):
+        with self.lock:
+            self.scan = msg
+            self.last_scan = rospy.Time.now()
+
+    def angle_error(self, a):
+        return math.atan2(math.sin(a), math.cos(a))
+
+    def sector_min(self, center, width):
+        scan = self.scan
+        if scan is None:
+            return 0.0
+        values = []
+        for i, r in enumerate(scan.ranges):
+            angle = scan.angle_min + i * scan.angle_increment
+            diff = self.angle_error(angle - center)
+            if abs(diff) <= width and math.isfinite(r):
+                if scan.range_min < r < scan.range_max:
+                    values.append(r)
+        return min(values) if values else scan.range_max
+
+    def stop(self):
+        self.pub.publish(Twist())
+
+    def status(self, distance=0.0):
+        m = PatrolStatus()
+        m.header.stamp = rospy.Time.now()
+        m.state = self.state
+        m.waypoint_index = min(self.index + 1, len(self.path))
+        m.total_waypoints = len(self.path)
+        m.distance_to_waypoint = float(distance)
+        m.message = self.message
+        self.status_pub.publish(m)
+        self.state_pub.publish(String(data=self.state))
+
+    def control_cb(self, req):
+        cmd = req.command.strip().lower()
+        with self.lock:
+            if cmd in ('start', 'resume', 'continue'):
+                if not self.path:
+                    return PatrolControlResponse(
+                        False, '没有全局路径，拒绝启动')
+                if self.pose is None or self.scan is None:
+                    return PatrolControlResponse(
+                        False, '尚未收到有效里程计或雷达数据')
+                if self.state in ('IDLE', 'STOPPED', 'SUCCEEDED', 'ABORTED'):
+                    # 从当前小车位置寻找最近的路径点，避免追逐旧起点。
+                    self.index = min(
+                        range(len(self.path)),
+                        key=lambda i: (self.path[i][0]-self.pose[0])**2
+                                      + (self.path[i][1]-self.pose[1])**2)
+                self.state = 'RUNNING'
+                self.message = '沿全局路径巡逻'
+                self.cancel = False
+            elif cmd == 'pause':
+                self.state = 'PAUSED'
+                self.message = '已暂停'
+            elif cmd == 'stop':
+                self.state = 'STOPPED'
+                self.message = '已停止'
+                self.cancel = True
+            elif cmd == 'reset':
+                self.index = 0
+                self.state = 'IDLE'
+                self.message = '已重置'
+                self.cancel = True
+            else:
+                return PatrolControlResponse(
+                    False, '命令应为 start/pause/resume/stop/reset')
+        self.stop()
+        self.status()
+        return PatrolControlResponse(True, self.message)
+
+    def execute_cb(self, goal):
+        with self.lock:
+            if not self.path or self.pose is None or self.scan is None:
+                result = PatrolResult()
+                result.success = False
+                result.message = '路径、里程计或雷达数据缺失'
+                self.action.set_aborted(result)
+                return
+            self.repeat = bool(goal.repeat)
+            self.cancel = False
+            self.action_active = True
+            self.index = min(
+                range(len(self.path)),
+                key=lambda i: (self.path[i][0]-self.pose[0])**2
+                              + (self.path[i][1]-self.pose[1])**2)
+            self.state = 'RUNNING'
+            self.message = 'Action 巡逻任务执行中'
+
+        rate = rospy.Rate(5)
+        result = PatrolResult()
+        while not rospy.is_shutdown():
+            if self.action.is_preempt_requested() or self.cancel:
+                self.stop()
+                result.success = False
+                result.message = '任务已取消'
+                self.action_active = False
+                self.action.set_preempted(result)
+                return
+            if self.state == 'SUCCEEDED':
+                if self.repeat:
+                    with self.lock:
+                        self.index = 0
+                        self.state = 'RUNNING'
+                    rate.sleep()
+                    continue
+                result.success = True
+                result.message = '巡逻完成'
+                self.action_active = False
+                self.action.set_succeeded(result)
+                return
+
+            fb = PatrolFeedback()
+            fb.waypoint_index = min(self.index + 1, len(self.path))
+            fb.total_waypoints = len(self.path)
+            fb.distance_to_waypoint = float(self.distance())
+            fb.state = self.state
+            self.action.publish_feedback(fb)
+            rate.sleep()
+
+        self.stop()
+        result.success = False
+        result.message = 'ROS 已关闭'
+        self.action_active = False
+        self.action.set_aborted(result)
+
+    def distance(self):
+        if self.pose is None or not self.path or self.index >= len(self.path):
+            return 0.0
+        x, y = self.path[self.index]
+        return math.hypot(x-self.pose[0], y-self.pose[1])
+
+    def loop(self, _event):
+        cmd = Twist()
+        distance = self.distance()
+
+        if self.state == 'RUNNING':
+            now = rospy.Time.now()
+            if (not self.path or self.pose is None or self.scan is None or
+                (now-self.last_odom).to_sec() > 1.0 or
+                (now-self.last_scan).to_sec() > 1.0):
+                self.state = 'PAUSED'
+                self.message = '传感器数据超时，安全停车'
+            elif self.index >= len(self.path):
+                self.stop()
+                self.state = 'SUCCEEDED'
+                self.message = '当前路径巡逻完成'
+            else:
+                # 逐点跟踪路径；跳过已到达的点，避免在网格拐角抖动。
+                while self.index < len(self.path) - 1 and self.distance() < 0.22:
+                    self.index += 1
+
+                tx, ty = self.path[self.index]
+                dx = tx - self.pose[0]
+                dy = ty - self.pose[1]
+                distance = math.hypot(dx, dy)
+                heading = math.atan2(dy, dx)
+                error = self.angle_error(heading - self.yaw)
+
+                front = self.sector_min(0.0, math.radians(20))
+                left = self.sector_min(math.radians(60), math.radians(30))
+                right = self.sector_min(math.radians(-60), math.radians(30))
+
+                # 雷达近障碍优先级高于路径跟踪；停止或低速原地让路。
+                if front < 0.30:
+                    cmd.linear.x = 0.0
+                    if left > right + 0.08:
+                        cmd.angular.z = 0.25
+                        self.message = '雷达检测到近障碍，向左调整'
+                    elif right > left + 0.08:
+                        cmd.angular.z = -0.25
+                        self.message = '雷达检测到近障碍，向右调整'
+                    else:
+                        cmd.angular.z = 0.0
+                        self.message = '前方障碍过近，安全停车'
+                else:
+                    if abs(error) > 0.35:
+                        cmd.angular.z = max(-0.45, min(0.45, 1.0*error))
+                    else:
+                        cmd.linear.x = min(0.10, max(0.035, 0.35*distance))
+                        cmd.angular.z = max(-0.20, min(0.20, 0.8*error))
+                        if front < 0.45:
+                            cmd.linear.x = min(cmd.linear.x, 0.035)
+                        self.message = '正在跟踪 A* 全局路径'
+
+                self.pub.publish(cmd)
+        else:
+            self.stop()
+
+        if (rospy.Time.now()-self.last_status).to_sec() > 0.5:
+            self.status(distance)
+            self.last_status = rospy.Time.now()
+
+
+if __name__ == '__main__':
+    try:
+        UnifiedNavigation()
+        rospy.spin()
+    except rospy.ROSInterruptException:
+        pass

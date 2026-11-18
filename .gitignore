@@ -1,0 +1,22 @@
+# catkin 编译产物
+/build/
+/devel/
+/install/
+logs/
+
+# Python
+*.pyc
+*.pyo
+__pycache__/
+*.egg-info/
+
+# IDE
+.idea/
+.vscode/
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# ROS 录制文件
+*.bag

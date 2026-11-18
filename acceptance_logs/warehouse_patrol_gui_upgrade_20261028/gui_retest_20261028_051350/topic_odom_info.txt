@@ -1,0 +1,9 @@
+Type: nav_msgs/Odometry
+
+Publishers: None
+
+Subscribers: 
+ * /warehouse_navigation_core (http://ubuntu:37673/)
+ * /warehouse_patrol_manager (http://ubuntu:42131/)
+
+

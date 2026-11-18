@@ -1,0 +1,17 @@
+=== LIVE_PROCESS ===
+85304 /usr/bin/python /opt/ros/melodic/bin/roslaunch warehouse_patrol_v2 patrol.launch gui:=true headless:=false use_rviz:=true autostart:=true loop_patrol:=true
+85423 /bin/sh /opt/ros/melodic/lib/gazebo_ros/gzserver -e ode /home/la/catkin_ws/src/warehouse_patrol_v2/worlds/complex_warehouse.world __name:=gazebo __log:=/home/la/.ros/log/0e65c8ac-d2c9-11f1-a1da-000c291a0e76/gazebo-2.log
+85427 /bin/sh /opt/ros/melodic/lib/gazebo_ros/gzclient __name:=gazebo_gui __log:=/home/la/.ros/log/0e65c8ac-d2c9-11f1-a1da-000c291a0e76/gazebo_gui-3.log
+85440 python /home/la/catkin_ws/src/warehouse_patrol_bot/scripts/warehouse_navigation_core.py __name:=warehouse_navigation_core __log:=/home/la/.ros/log/0e65c8ac-d2c9-11f1-a1da-000c291a0e76/warehouse_navigation_core-6.log
+85441 python /home/la/catkin_ws/src/warehouse_patrol_bot/scripts/warehouse_unified_navigation.py __name:=warehouse_patrol_manager __log:=/home/la/.ros/log/0e65c8ac-d2c9-11f1-a1da-000c291a0e76/warehouse_patrol_manager-7.log
+85446 /opt/ros/melodic/lib/rviz/rviz -d /home/la/catkin_ws/src/warehouse_patrol_bot/rviz/warehouse_patrol.rviz __name:=warehouse_patrol_rviz __log:=/home/la/.ros/log/0e65c8ac-d2c9-11f1-a1da-000c291a0e76/warehouse_patrol_rviz-8.log
+85514 gzclient -g /opt/ros/melodic/lib/libgazebo_ros_paths_plugin.so -g /opt/ros/melodic/lib/libgazebo_ros_api_plugin.so __name:=gazebo_gui __log:=/home/la/.ros/log/0e65c8ac-d2c9-11f1-a1da-000c291a0e76/gazebo_gui-3.log
+85523 gzserver -e ode /home/la/catkin_ws/src/warehouse_patrol_v2/worlds/complex_warehouse.world -s /opt/ros/melodic/lib/libgazebo_ros_paths_plugin.so -s /opt/ros/melodic/lib/libgazebo_ros_api_plugin.so __name:=gazebo __log:=/home/la/.ros/log/0e65c8ac-d2c9-11f1-a1da-000c291a0e76/gazebo-2.log
+=== LIVE_NODES ===
+/gazebo
+/gazebo_gui
+/robot_state_publisher
+/rosout
+/warehouse_navigation_core
+/warehouse_patrol_manager
+/warehouse_patrol_rviz

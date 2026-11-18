@@ -1,0 +1,10 @@
+Type: sensor_msgs/LaserScan
+
+Publishers: 
+ * /gazebo (http://ubuntu:46169/)
+
+Subscribers: 
+ * /warehouse_patrol_manager (http://ubuntu:42269/)
+ * /warehouse_patrol_rviz (http://ubuntu:41557/)
+
+

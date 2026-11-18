@@ -1,0 +1,382 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import collections
+import heapq
+import math
+import time
+
+import rospy
+from geometry_msgs.msg import PoseStamped
+from nav_msgs.msg import OccupancyGrid, Odometry, Path
+from gazebo_msgs.srv import GetModelState, GetWorldProperties
+
+RESOLUTION = 0.25
+BOUNDS = (-9.0, 9.0, -9.0, 9.0)
+PATROL_CHECKPOINTS = [
+    (-7.0, 0.0),
+    (-7.0, -3.0),
+    (-7.0, -6.0),
+    (0.0, -6.0),
+    (7.0, -6.0),
+    (7.0, 0.0),
+    (7.0, 6.0),
+    (0.0, 6.0),
+    (-7.0, 6.0),
+    (-7.0, 3.0),
+    (-7.0, 0.0),
+]
+OBSTACLE_PREFIXES = (
+    'rack_', 'left_partition_', 'right_partition_', 'obstacle_',
+    'north_wall', 'south_wall', 'east_wall', 'west_wall'
+)
+
+
+class OdomMonitor(object):
+    def __init__(self):
+        self.msg = None
+        self.wall_time = 0.0
+        self.sub = rospy.Subscriber('/odom', Odometry, self.callback, queue_size=1)
+
+    def callback(self, msg):
+        self.msg = msg
+        self.wall_time = time.time()
+
+    def fresh(self, max_age=2.0):
+        return self.msg is not None and (time.time() - self.wall_time) <= max_age
+
+
+def grid_bounds():
+    xmin, xmax, ymin, ymax = BOUNDS
+    return (0, int(round((xmax - xmin) / RESOLUTION)), 0, int(round((ymax - ymin) / RESOLUTION)))
+
+
+def cell(x, y):
+    xmin, _, ymin, _ = BOUNDS
+    return (int(round((x - xmin) / RESOLUTION)), int(round((y - ymin) / RESOLUTION)))
+
+
+def xy(c):
+    xmin, _, ymin, _ = BOUNDS
+    return (xmin + c[0] * RESOLUTION, ymin + c[1] * RESOLUTION)
+
+
+def inside(p, bounds):
+    xmin, xmax, ymin, ymax = bounds
+    return xmin <= p[0] <= xmax and ymin <= p[1] <= ymax
+
+
+def neighbors(cell_xy):
+    return ((cell_xy[0] + 1, cell_xy[1]), (cell_xy[0] - 1, cell_xy[1]), (cell_xy[0], cell_xy[1] + 1), (cell_xy[0], cell_xy[1] - 1))
+
+
+def heuristic(a, b):
+    return abs(a[0] - b[0]) + abs(a[1] - b[1])
+
+
+def astar(start, goal, blocked, bounds):
+    queue = [(heuristic(start, goal), 0, start)]
+    parent = {start: None}
+    cost = {start: 0}
+
+    while queue:
+        _, g_cost, current = heapq.heappop(queue)
+        if current == goal:
+            break
+        if g_cost != cost.get(current):
+            continue
+
+        for nxt in neighbors(current):
+            if not inside(nxt, bounds) or nxt in blocked:
+                continue
+            next_cost = g_cost + 1
+            if next_cost < cost.get(nxt, float('inf')):
+                cost[nxt] = next_cost
+                parent[nxt] = current
+                heapq.heappush(queue, (next_cost + heuristic(nxt, goal), next_cost, nxt))
+
+    if goal not in parent:
+        return []
+
+    path = []
+    current = goal
+    while current is not None:
+        path.append(current)
+        current = parent[current]
+    path.reverse()
+    return path
+
+
+def project_to_free(start, blocked, bounds):
+    if inside(start, bounds) and start not in blocked:
+        return start
+
+    queue = collections.deque([start])
+    visited = set([start])
+    while queue:
+        current = queue.popleft()
+        for nxt in neighbors(current):
+            if nxt in visited or not inside(nxt, bounds):
+                continue
+            if nxt not in blocked:
+                return nxt
+            visited.add(nxt)
+            queue.append(nxt)
+    return None
+
+
+def concat_paths(segments):
+    merged = []
+    for segment in segments:
+        if not segment:
+            continue
+        if merged and merged[-1] == segment[0]:
+            merged.extend(segment[1:])
+        else:
+            merged.extend(segment)
+    return merged
+
+
+def inflate_half_extent(name):
+    if name.startswith('rack_'):
+        return (0.70, 1.20)
+    if 'partition' in name:
+        return (0.22, 0.60)
+    if name.endswith('_wall'):
+        return (0.30, 0.30)
+    return (0.45, 0.45)
+
+
+def build_blocked_set(model_names, get_model):
+    xmin, _, ymin, _ = BOUNDS
+    blocked = set()
+
+    for name in model_names:
+        if name.startswith('shelf_'):
+            continue
+        if not name.startswith(OBSTACLE_PREFIXES):
+            continue
+
+        try:
+            state = get_model(name, 'world')
+        except rospy.ServiceException:
+            continue
+        if not state.success:
+            continue
+
+        ox = state.pose.position.x
+        oy = state.pose.position.y
+        radius_x, radius_y = inflate_half_extent(name)
+
+        ix0 = int(math.floor((ox - radius_x - xmin) / RESOLUTION))
+        ix1 = int(math.ceil((ox + radius_x - xmin) / RESOLUTION))
+        iy0 = int(math.floor((oy - radius_y - ymin) / RESOLUTION))
+        iy1 = int(math.ceil((oy + radius_y - ymin) / RESOLUTION))
+
+        for ix in range(ix0, ix1 + 1):
+            for iy in range(iy0, iy1 + 1):
+                blocked.add((ix, iy))
+    return blocked
+
+
+def build_patrol_path(start_cell, blocked, bounds):
+    anchor_cells = []
+    for wx, wy in PATROL_CHECKPOINTS[:-1]:
+        anchor = project_to_free(cell(wx, wy), blocked, bounds)
+        if anchor is None:
+            raise RuntimeError('Patrol checkpoint (%.2f, %.2f) is unreachable' % (wx, wy))
+        anchor_cells.append(anchor)
+
+    candidates = []
+    for index, anchor in enumerate(anchor_cells):
+        prefix = astar(start_cell, anchor, blocked, bounds)
+        if prefix:
+            candidates.append((len(prefix), index, prefix))
+
+    if not candidates:
+        raise RuntimeError('Current robot position cannot reach any patrol checkpoint')
+
+    _, start_index, prefix = min(candidates)
+    ordered = anchor_cells[start_index:] + anchor_cells[:start_index]
+    ordered.append(anchor_cells[start_index])
+
+    segments = [prefix]
+    for left, right in zip(ordered, ordered[1:]):
+        segment = astar(left, right, blocked, bounds)
+        if not segment:
+            raise RuntimeError('No safe path between patrol checkpoints %s and %s' % (left, right))
+        segments.append(segment)
+
+    dense_path = concat_paths(segments)
+    checkpoints = [xy(anchor) for anchor in ordered]
+    return dense_path, checkpoints
+
+
+def build_path_message(path_cells):
+    path_msg = Path()
+    path_msg.header.frame_id = 'odom'
+    path_msg.header.stamp = rospy.Time.now()
+    for path_cell in path_cells:
+        px, py = xy(path_cell)
+        pose = PoseStamped()
+        pose.header = path_msg.header
+        pose.pose.position.x = px
+        pose.pose.position.y = py
+        pose.pose.orientation.w = 1.0
+        path_msg.poses.append(pose)
+    return path_msg
+
+
+def build_grid_message(blocked):
+    xmin, xmax, ymin, ymax = BOUNDS
+    grid = OccupancyGrid()
+    grid.header.frame_id = 'odom'
+    grid.header.stamp = rospy.Time.now()
+    grid.info.resolution = RESOLUTION
+    grid.info.width = int(round((xmax - xmin) / RESOLUTION)) + 1
+    grid.info.height = int(round((ymax - ymin) / RESOLUTION)) + 1
+    grid.info.origin.position.x = xmin
+    grid.info.origin.position.y = ymin
+    grid.info.origin.orientation.w = 1.0
+    grid.data = [0] * (grid.info.width * grid.info.height)
+    for ix, iy in blocked:
+        if 0 <= ix < grid.info.width and 0 <= iy < grid.info.height:
+            grid.data[iy * grid.info.width + ix] = 100
+    return grid
+
+
+def wait_for_gazebo_services(timeout_seconds):
+    start = time.time()
+    while not rospy.is_shutdown():
+        try:
+            rospy.wait_for_service('/gazebo/get_world_properties', timeout=2.0)
+            rospy.wait_for_service('/gazebo/get_model_state', timeout=2.0)
+            return True
+        except rospy.ROSException:
+            elapsed = time.time() - start
+            if elapsed >= timeout_seconds:
+                rospy.logerr('Timed out after %.1fs waiting for Gazebo services /gazebo/get_world_properties and /gazebo/get_model_state', elapsed)
+                return False
+            rospy.logwarn_throttle(5.0, 'Waiting for Gazebo services to become available...')
+    return False
+
+
+def wait_for_robot_ready(world, get_model, odom_monitor, timeout_seconds):
+    start = time.time()
+    last_reason = ''
+    while not rospy.is_shutdown():
+        elapsed = time.time() - start
+        if elapsed >= timeout_seconds:
+            rospy.logerr('Planner startup timed out after %.1fs: %s', elapsed, last_reason or 'robot not ready')
+            return None, None, last_reason or 'timeout'
+
+        try:
+            model_names = set(world().model_names)
+        except rospy.ServiceException as exc:
+            last_reason = 'cannot query Gazebo world: %s' % exc
+            rospy.logwarn_throttle(5.0, last_reason)
+            time.sleep(0.5)
+            continue
+
+        if 'turtlebot3_burger' not in model_names:
+            last_reason = 'waiting for turtlebot3_burger to be spawned into Gazebo world'
+            rospy.logwarn_throttle(5.0, last_reason)
+            time.sleep(0.5)
+            continue
+
+        try:
+            robot = get_model('turtlebot3_burger', 'world')
+        except rospy.ServiceException as exc:
+            last_reason = 'cannot read turtlebot3_burger pose: %s' % exc
+            rospy.logwarn_throttle(5.0, last_reason)
+            time.sleep(0.5)
+            continue
+
+        if not robot.success:
+            last_reason = 'Gazebo reported turtlebot3_burger pose unavailable'
+            rospy.logwarn_throttle(5.0, last_reason)
+            time.sleep(0.5)
+            continue
+
+        if not odom_monitor.fresh(max_age=2.5):
+            last_reason = 'robot model exists, waiting for fresh /odom data'
+            rospy.logwarn_throttle(5.0, last_reason)
+            time.sleep(0.5)
+            continue
+
+        return model_names, robot, ''
+    return None, None, 'shutdown'
+
+
+def generate_plan(world, get_model, odom_monitor):
+    model_names, robot, reason = wait_for_robot_ready(
+        world,
+        get_model,
+        odom_monitor,
+        timeout_seconds=float(rospy.get_param('~startup_timeout', 45.0)))
+    if robot is None:
+        return None, None, reason
+
+    raw_start = cell(robot.pose.position.x, robot.pose.position.y)
+    blocked = build_blocked_set(model_names, get_model)
+    bounds = grid_bounds()
+    start = project_to_free(raw_start, blocked, bounds)
+    if start is None:
+        return None, None, 'cannot project robot start cell %s to a free grid cell' % (raw_start,)
+    if start != raw_start:
+        rospy.logwarn('Robot start cell %s was inside inflated obstacles; projected to %s', raw_start, start)
+    blocked.discard(start)
+
+    dense_path, checkpoints = build_patrol_path(start, blocked, bounds)
+    rospy.set_param('/warehouse_patrol/checkpoints', [[x, y] for x, y in checkpoints])
+    rospy.loginfo('Generated patrol path with %d cells and %d checkpoints', len(dense_path), len(checkpoints) - 1)
+    for index, point in enumerate(checkpoints[:-1]):
+        rospy.loginfo('Checkpoint %d: (%.2f, %.2f)', index + 1, point[0], point[1])
+    return build_path_message(dense_path), build_grid_message(blocked), ''
+
+
+def main():
+    rospy.init_node('warehouse_navigation_core', anonymous=False)
+
+    odom_monitor = OdomMonitor()
+    if not wait_for_gazebo_services(timeout_seconds=float(rospy.get_param('~service_timeout', 30.0))):
+        return
+
+    world = rospy.ServiceProxy('/gazebo/get_world_properties', GetWorldProperties)
+    get_model = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
+    path_pub = rospy.Publisher('/warehouse_patrol/global_path', Path, queue_size=1, latch=True)
+    map_pub = rospy.Publisher('/warehouse_patrol/grid_map', OccupancyGrid, queue_size=1, latch=True)
+
+    retry_interval = float(rospy.get_param('~retry_interval', 3.0))
+    path_msg = None
+    grid_msg = None
+
+    while not rospy.is_shutdown() and (path_msg is None or grid_msg is None):
+        try:
+            path_msg, grid_msg, reason = generate_plan(world, get_model, odom_monitor)
+        except RuntimeError as exc:
+            path_msg, grid_msg, reason = None, None, str(exc)
+        except rospy.ServiceException as exc:
+            path_msg, grid_msg, reason = None, None, 'Gazebo service error: %s' % exc
+
+        if path_msg is None or grid_msg is None:
+            rospy.logerr('Global planner is not ready yet: %s. Retrying in %.1fs', reason, retry_interval)
+            rospy.sleep(retry_interval)
+
+    rate = rospy.Rate(1)
+    while not rospy.is_shutdown():
+        now = rospy.Time.now()
+        path_msg.header.stamp = now
+        grid_msg.header.stamp = now
+        for pose in path_msg.poses:
+            pose.header.stamp = now
+        path_pub.publish(path_msg)
+        map_pub.publish(grid_msg)
+        rate.sleep()
+
+
+if __name__ == '__main__':
+    try:
+        main()
+    except rospy.ROSInterruptException:
+        pass

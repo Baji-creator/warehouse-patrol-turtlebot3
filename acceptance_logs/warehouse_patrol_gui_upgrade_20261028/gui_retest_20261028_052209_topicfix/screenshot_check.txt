@@ -1,0 +1,5 @@
+=== SCREENSHOT ===
+gnome-screenshot:ok
+import:ok
+-rw-rw-r-- 1 la la 293K Oct 28 05:24 /home/la/catkin_ws/acceptance_logs/warehouse_patrol_gui_upgrade_20261028/gui_retest_20261028_052209_topicfix/gui_desktop.png
+-rw-rw-r-- 1 la la 220K Oct 28 05:24 /home/la/catkin_ws/acceptance_logs/warehouse_patrol_gui_upgrade_20261028/gui_retest_20261028_052209_topicfix/gui_root.png
